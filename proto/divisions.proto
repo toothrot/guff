@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package guff.proto;
+
+service DivisionsService {
+    rpc GetDivisions(GetDivisionsRequest) returns (GetDivisionsResponse) { }
+}
+
+message GetDivisionsRequest {
+
+}
+
+message GetDivisionsResponse {
+
+}
