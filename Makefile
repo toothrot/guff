@@ -5,7 +5,7 @@ PROTOC_GEN_TS := $(PWD)/web/node_modules/.bin/protoc-gen-ts
 
 PROTO_PATH := proto
 GO_PROTO_PATH := go/generated
-JS_PROTO_PATH := web/src/proto
+JS_PROTO_PATH := web/src/generated
 PROTO_FILES := $(wildcard $(PROTO_PATH)/*.proto)
 GO_PROTO_FILES := $(patsubst $(PROTO_PATH)/%.proto,$(GO_PROTO_PATH)/%.pb.go,$(PROTO_FILES))
 TS_PROTO_FILES := $(patsubst $(PROTO_PATH)/%.proto,$(JS_PROTO_PATH)/%.d.ts,$(PROTO_FILES))
