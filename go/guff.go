@@ -3,29 +3,44 @@ package main
 import (
 	"flag"
 	"log"
-	"net"
+	"mime"
+	"net/http"
+	"path"
+	"path/filepath"
 
 	"github.com/golang/glog"
-	"google.golang.org/grpc"
-
-	guff_proto "github.com/toohtrot/guff/go/generated"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
+var (
+	webRoot = flag.String("web_root", "", "Path from which to serve web files.")
+)
 
 func main() {
 	flag.Parse()
 	glog.Info("Don't take any guff from these swine.")
-	l, err  := net.Listen("tcp", ":0")
+
+	r := mux.NewRouter()
+	r.PathPrefix("/").HandlerFunc(fileServerFunc(*webRoot))
+	http.Handle("/", r)
+	err := http.ListenAndServe(":8080", handlers.CompressHandler(r))
 	if err != nil {
-		glog.Fatalf("failed to listen: %q", err)
+		glog.Errorf("http.ListenAndServe() = %q", err)
 	}
+}
 
-	foo := &guff_proto.UnimplementedDivisionsServiceServer{}
-	s := grpc.NewServer()
-	guff_proto.RegisterDivisionsServiceServer(s, foo)
-
-	err = s.Serve(l)
+func fileServerFunc(root string) http.HandlerFunc {
+	abs, err := filepath.Abs(root)
 	if err != nil {
-		log.Fatalf("s.Serve(%#v) = %q", l, err)
+		log.Fatalf("Error parsing absolute path from %q", *webRoot)
+	}
+	glog.Infof("Serving from root %q", abs)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		glog.Infof("%q: %q", r.Method, r.URL.Path)
+		w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
+		fs := http.FileServer(http.Dir(abs))
+		fs.ServeHTTP(w, r)
 	}
 }
