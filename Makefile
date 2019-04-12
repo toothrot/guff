@@ -47,6 +47,16 @@ clean:
 docker-dev: proto
 	docker build -t guff-dev:1 . --build-arg "configuration="
 
+.PHONY: docker-dev-run
+docker-dev-run: docker-dev
+	$(MAKE) docker-dev-stop
+	docker run --name=guff-dev -p 8080:8080/tcp --rm -d guff-dev:1
+
+.PHONY: docker-dev-stop
+docker-dev-stop:
+	docker stop guff-dev || true
+
+
 .PHONY: watch-docker-dev
 watch-docker-dev:
 	while true; do \
