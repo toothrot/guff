@@ -62,10 +62,4 @@ docker-dev-stop:
 
 .PHONY: watch-docker-dev
 watch-docker-dev:
-	while true; do \
-		docker stop guff-dev; \
-		$(MAKE) docker-dev; \
-		docker run --name=guff-dev -p 8080:8080/tcp --rm -d guff-dev:1; \
-		inotifywait -qre close_write go web; \
-	done
-	docker stop docker-dev
+	git ls-files | entr bash -c "time $(MAKE) docker-dev-run"
