@@ -64,6 +64,8 @@ func fileServerFunc(root string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		glog.Infof("%q: %q", r.Method, r.URL.Path)
 		w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
+		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+
 		fs := http.FileServer(http.Dir(abs))
 		fs.ServeHTTP(w, r)
 	}

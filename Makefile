@@ -42,3 +42,17 @@ proto: $(ALL_PROTO_FILES)
 clean:
 	rm -f $(GO_PROTO_FILES) $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO_FILES)
 	rm -rf web/dist/
+
+.PHONY: docker-dev
+docker-dev: proto
+	docker build -t guff-dev:1 . --build-arg "configuration="
+
+.PHONY: watch-docker-dev
+watch-docker-dev:
+	while true; do \
+		docker stop guff-dev; \
+		$(MAKE) docker-dev; \
+		docker run --name=guff-dev -p 8080:8080/tcp --rm -d guff-dev:1; \
+		inotifywait -qre close_write go web; \
+	done
+	docker stop docker-dev
