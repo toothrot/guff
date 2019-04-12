@@ -23,7 +23,6 @@ func main() {
 
 	r := mux.NewRouter()
 	r.PathPrefix("/").HandlerFunc(fileServerFunc(*webRoot))
-	http.Handle("/", r)
 	err := http.ListenAndServe(":8080", handlers.CompressHandler(r))
 	if err != nil {
 		glog.Errorf("http.ListenAndServe() = %q", err)
