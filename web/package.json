@@ -21,6 +21,7 @@
     "@angular/router": "^7.2.12",
     "@improbable-eng/grpc-web": "^0.9.1",
     "core-js": "^2.5.4",
+    "grpc-web": "^1.0.4",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
     "zone.js": "~0.8.26"

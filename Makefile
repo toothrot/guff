@@ -17,7 +17,7 @@ WEB_SOURCES := $(shell git ls-files web/)
 
 # default target
 .PHONY: all
-all: proto web-prod
+all: proto web-prod fmt
 
 $(GO_PROTO_FILES): $(PROTO_FILES)
 	$(PROTOC) -I proto/ $^ --go_out=plugins=grpc:go/generated
