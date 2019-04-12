@@ -4,7 +4,6 @@ FROM node:10.15-alpine as ui-builder
 WORKDIR /app
 
 COPY ./web/package*.json /app/
-
 RUN npm install
 
 COPY ./web /app/
@@ -19,6 +18,10 @@ FROM golang:1.11-alpine as go-builder
 RUN apk add --no-cache git
 
 WORKDIR /app
+
+COPY ./go/go.mod /app
+COPY ./go/go.sum /app
+RUN go mod download
 
 COPY ./go /app/
 
