@@ -1,6 +1,7 @@
 .idea
 *.iml
 *.swp
+.secrets/
 
 # Logs
 logs
