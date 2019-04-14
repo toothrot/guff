@@ -19,6 +19,15 @@ WEB_SOURCES := $(shell git ls-files web/)
 .PHONY: all
 all: proto web-prod fmt
 
+.PHONY: clean
+clean:
+	rm -f $(GO_PROTO_FILES) $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO_FILES)
+	rm -rf web/dist/
+
+#
+# PROTO
+#
+
 $(GO_PROTO_FILES): $(PROTO_FILES)
 	$(PROTOC) -I proto/ $^ --go_out=plugins=grpc:go/generated
 
@@ -29,23 +38,36 @@ $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO
 		--js_out=import_style=commonjs,binary:$(JS_PROTO_PATH) \
 		--ts_out=service=true:$(JS_PROTO_PATH)
 
-.PHONY: web-prod
-web-prod: web/dist/prod/*
-
 web/dist/prod/%: $(WEB_SOURCES) $(ALL_PROTO_FILES)
 	cd web; npm run ng -- build --prod --output-path=./dist/prod
+
+.PHONY: proto
+proto: $(ALL_PROTO_FILES)
+
+#
+# BUILD
+#
 
 .PHONY: fmt
 fmt:
 	go fmt ./go/...
 
-.PHONY: proto
-proto: $(ALL_PROTO_FILES)
+.PHONY: web-prod
+web-prod: web/dist/prod/*
 
-.PHONY: clean
-clean:
-	rm -f $(GO_PROTO_FILES) $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO_FILES)
-	rm -rf web/dist/
+#
+# DEV
+#
+#.secrets/oauth2-secret-dev:
+.secrets/session-key-secret-dev:
+	openssl rand -base64 -out .secrets/session-key-secret-dev 64
+
+.secrets/oauth2-secret-dev.json:
+	cat ./doc/oauth_dev_credentials.md
+
+#
+# DOCKER
+#
 
 .PHONY: docker-dev
 docker-dev: proto
