@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  web:
+    build:
+      context: ./
+      args:
+        configuration: ""
+    image: guff-dev:1
+    ports:
+      - "8080:8080"
+

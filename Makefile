@@ -71,16 +71,16 @@ web-prod: web/dist/prod/*
 
 .PHONY: docker-dev
 docker-dev: proto
-	docker build -t guff-dev:1 . --build-arg "configuration="
+	docker-compose build
 
 .PHONY: docker-dev-run
 docker-dev-run: docker-dev
 	$(MAKE) docker-dev-stop
-	docker run --name=guff-dev -p 8080:8080/tcp --rm -d guff-dev:1
+	docker-compose up -d
 
 .PHONY: docker-dev-stop
 docker-dev-stop:
-	docker stop guff-dev || true
+	docker-compose down || true
 
 .PHONY: watch-docker-dev
 watch-docker-dev:
