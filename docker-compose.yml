@@ -8,4 +8,14 @@ services:
     image: guff-dev:1
     ports:
       - "8080:8080"
+    secrets:
+      - source: oauth
+        target: oauth.json
+      - source: session-key
+        target: session-key
+secrets:
+  oauth:
+    file: ./.secrets/oauth2-secret-dev.json
+  session-key:
+    file: ./.secrets/session-key-secret-dev
 

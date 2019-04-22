@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {AppService} from "./app.service";
-import {Observable} from "rxjs";
+import {AppService} from './app.service';
+import {Observable} from 'rxjs';
 import {GetCurrentUserResponse} from 'src/generated/users_pb';
 
 @Component({

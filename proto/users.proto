@@ -9,23 +9,6 @@ service UsersService {
 message GetCurrentUserRequest {}
 
 message GetCurrentUserResponse {
-  AppStatus app_status = 1;
-
-  UserRoles user_roles = 2;
+  string email = 1;
 }
 
-message UserRoles {
-  bool can_bootstrap = 1;
-}
-
-message AppStatus {
-  AppStatusCode code = 1;
-}
-
-// Protobuf uses c++ style namespacing. Prepend enum names with something that is safe globally.
-enum AppStatusCode {
-  APP_STATUS_UNKNOWN = 0;
-  APP_STATUS_OK = 1;
-  APP_STATUS_DATABASE_CONNECTION_FAILURE = 2;
-  APP_STATUS_NO_DATABASE = 3;
-}
