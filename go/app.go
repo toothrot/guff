@@ -30,7 +30,7 @@ type guffApp struct {
 	server     *http.Server
 	grpcServer *grpc.Server
 	grpcWeb    *grpcweb.WrappedGrpcServer
-	oauth      *services.OAuthService
+	oauth      *services.OAuth
 }
 
 func (g *guffApp) Serve(ctx context.Context) {
@@ -38,9 +38,9 @@ func (g *guffApp) Serve(ctx context.Context) {
 
 	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
 	g.grpcServer = grpc.NewServer()
-	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.UsersService{Config: g.Config})
+	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.Config})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
-	g.oauth = &services.OAuthService{Config: g.Config}
+	g.oauth = &services.OAuth{Config: g.Config}
 
 	g.registerRoutes()
 

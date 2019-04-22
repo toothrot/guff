@@ -12,12 +12,12 @@ import (
 	guff_proto "github.com/toothrot/guff/go/generated"
 )
 
-type UsersService struct {
+type Users struct {
 	guff_proto.UnimplementedUsersServiceServer
 	Config *core.Config
 }
 
-func (u *UsersService) GetCurrentUser(ctx context.Context, req *guff_proto.GetCurrentUserRequest) (*guff_proto.GetCurrentUserResponse, error) {
+func (u *Users) GetCurrentUser(ctx context.Context, req *guff_proto.GetCurrentUserRequest) (*guff_proto.GetCurrentUserResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		glog.Errorf("fromincomingcontext ok: %v", ok)

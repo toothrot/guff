@@ -13,11 +13,11 @@ import (
 	"github.com/toothrot/guff/go/core"
 )
 
-type OAuthService struct {
+type OAuth struct {
 	Config *core.Config
 }
 
-func (o *OAuthService) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (o *OAuth) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	s, err := o.Config.CookieStore.Get(r, "glogin")
 	if err != nil {
 		glog.Errorf("CookieStore.Get(_, %q) = %q", "glogin", err)
@@ -39,7 +39,7 @@ func (o *OAuthService) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, o.Config.OAuthConfig.AuthCodeURL(u.String()), http.StatusFound)
 }
 
-func (o *OAuthService) OAuth2Callback(w http.ResponseWriter, r *http.Request) {
+func (o *OAuth) OAuth2Callback(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		glog.Errorf("parseform: %q", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
