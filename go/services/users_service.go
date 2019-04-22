@@ -13,6 +13,7 @@ import (
 )
 
 type UsersService struct {
+	guff_proto.UnimplementedUsersServiceServer
 	Config *core.Config
 }
 

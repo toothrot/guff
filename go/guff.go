@@ -38,6 +38,7 @@ func main() {
 	if err != nil {
 		glog.Errorf("google.ConfigFromJSON() returned error %q", err)
 	}
+	oc.Scopes = []string{"email", "profile"}
 	conf := &core.Config{OAuthConfig: oc, CookieStore: store}
 
 	ctx, cancel := context.WithCancel(context.Background())
