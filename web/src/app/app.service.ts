@@ -2,9 +2,8 @@ import {Injectable} from '@angular/core';
 import {GetCurrentUserRequest, GetCurrentUserResponse} from '../generated/users_pb';
 import {bindNodeCallback, Observable} from 'rxjs';
 import {UsersServiceClient} from '../generated/UsersServiceClientPb';
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
-import {first} from 'rxjs/internal/operators/first';
-import {tap} from 'rxjs/internal/operators/tap';
+import {HttpClient} from '@angular/common/http';
+import {map, shareReplay, take} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +23,16 @@ export class AppService {
     return clientObservable();
   }
 
-  logIn(): Observable<HttpResponse<string>> {
-    const headers = new HttpHeaders({'Content-Type':  'application/json'});
-    return this.httpClient.post('/login', {}, {observe: 'response', responseType: 'text', headers: headers}).pipe(
-      first(),
-      tap(((resp) => {
-        console.log(resp.headers.keys());
-      })));
+  oAuthURL(): Observable<string> {
+    return this.getCurrentUser().pipe(
+      take(1),
+      map((resp => {
+        const url = new URL(resp.getGoogleOauthConfig().getLoginurl());
+        url.searchParams.set('response_type', 'id_token');
+        url.searchParams.set('redirect_uri', 'http://localhost:8080');
+        return url.toString();
+      })),
+      shareReplay(),
+    );
   }
 }

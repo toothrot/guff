@@ -49,6 +49,10 @@ export class GoogleOAuthConfig extends jspb.Message {
   getClientId(): string;
   setClientId(value: string): void;
 
+  getLoginurl(): string;
+
+  setLoginurl(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GoogleOAuthConfig.AsObject;
   static toObject(includeInstance: boolean, msg: GoogleOAuthConfig): GoogleOAuthConfig.AsObject;
@@ -62,6 +66,7 @@ export class GoogleOAuthConfig extends jspb.Message {
 export namespace GoogleOAuthConfig {
   export type AsObject = {
     clientId: string,
+    loginurl: string,
   }
 }
 

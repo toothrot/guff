@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc/metadata"
@@ -23,20 +22,12 @@ func (u *Users) GetCurrentUser(ctx context.Context, req *guff_proto.GetCurrentUs
 		glog.Errorf("fromincomingcontext ok: %v", ok)
 	}
 	glog.Infof("metadata: %#v", md)
-	r := &http.Request{Header: http.Header{}}
-	for k, v := range md {
-		for _, val := range v {
-			r.Header.Add(k, val)
-		}
-	}
-	resp := &guff_proto.GetCurrentUserResponse{}
-	session, err := u.Config.CookieStore.Get(r, "guff")
-	if err != nil {
-		glog.Errorf("Cookiestore get failure: %q", err)
-		return resp, nil
-	}
-	if email, ok := session.Values["email"].(string); ok {
-		resp.Email = email
+
+	resp := &guff_proto.GetCurrentUserResponse{
+		GoogleOauthConfig: &guff_proto.GoogleOAuthConfig{
+			ClientId: u.Config.OAuthConfig.ClientID,
+			LoginURL: u.Config.OAuthConfig.AuthCodeURL(""),
+		},
 	}
 	return resp, nil
 }

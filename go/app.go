@@ -30,7 +30,6 @@ type guffApp struct {
 	server     *http.Server
 	grpcServer *grpc.Server
 	grpcWeb    *grpcweb.WrappedGrpcServer
-	oauth      *services.OAuth
 }
 
 func (g *guffApp) Serve(ctx context.Context) {
@@ -40,7 +39,6 @@ func (g *guffApp) Serve(ctx context.Context) {
 	g.grpcServer = grpc.NewServer()
 	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.Config})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
-	g.oauth = &services.OAuth{Config: g.Config}
 
 	g.registerRoutes()
 
@@ -62,8 +60,6 @@ func (g *guffApp) Serve(ctx context.Context) {
 
 func (g *guffApp) registerRoutes() {
 	g.router.PathPrefix("/guff.proto").Handler(g.grpcWeb)
-	g.router.HandleFunc("/login", g.oauth.LoginHandler).Methods(http.MethodPost)
-	g.router.HandleFunc("/oauth2callback", g.oauth.OAuth2Callback)
 	g.router.PathPrefix("/").Handler(&fileServer{*webRoot})
 }
 

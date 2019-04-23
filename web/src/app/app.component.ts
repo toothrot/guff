@@ -11,15 +11,13 @@ import {GetCurrentUserResponse} from 'src/generated/users_pb';
 export class AppComponent implements OnInit {
   title = 'web';
   currentUser: Observable<GetCurrentUserResponse>;
+  loginURL: Observable<string>;
 
   constructor(private appService: AppService) {
   }
 
-  logIn() {
-    this.appService.logIn().subscribe();
-  }
-
   ngOnInit() {
     this.currentUser = this.appService.getCurrentUser();
+    this.loginURL = this.appService.oAuthURL();
   }
 }

@@ -363,7 +363,8 @@ proto.guff.proto.GoogleOAuthConfig.prototype.toObject = function(opt_includeInst
  */
 proto.guff.proto.GoogleOAuthConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    clientId: jspb.Message.getFieldWithDefault(msg, 1, "")
+    clientId: jspb.Message.getFieldWithDefault(msg, 1, ''),
+    loginurl: jspb.Message.getFieldWithDefault(msg, 2, '')
   };
 
   if (includeInstance) {
@@ -403,7 +404,11 @@ proto.guff.proto.GoogleOAuthConfig.deserializeBinaryFromReader = function(msg, r
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setClientId(value);
-      break;
+      break
+      case 2:
+        var value = /** @type {string} */ (reader.readString())
+        msg.setLoginurl(value)
+        break;
     default:
       reader.skipField();
       break;
@@ -440,6 +445,13 @@ proto.guff.proto.GoogleOAuthConfig.serializeBinaryToWriter = function(message, w
       f
     );
   }
+  f = message.getLoginurl()
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -456,6 +468,19 @@ proto.guff.proto.GoogleOAuthConfig.prototype.getClientId = function() {
 proto.guff.proto.GoogleOAuthConfig.prototype.setClientId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
 };
+
+/**
+ * optional string loginURL = 2;
+ * @return {string}
+ */
+proto.guff.proto.GoogleOAuthConfig.prototype.getLoginurl = function () {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ''))
+}
+
+/** @param {string} value */
+proto.guff.proto.GoogleOAuthConfig.prototype.setLoginurl = function (value) {
+  jspb.Message.setProto3StringField(this, 2, value)
+}
 
 
 goog.object.extend(exports, proto.guff.proto);

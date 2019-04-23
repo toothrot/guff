@@ -10,5 +10,13 @@ message GetCurrentUserRequest {}
 
 message GetCurrentUserResponse {
   string email = 1;
+
+  GoogleOAuthConfig google_oauth_config = 2;
+}
+
+message GoogleOAuthConfig {
+  string client_id = 1;
+
+  string loginURL = 2;
 }
 
