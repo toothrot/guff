@@ -4,7 +4,7 @@ NODE_PATH := $(PWD)/web
 PROTOC_GEN_TS := $(PWD)/web/node_modules/.bin/protoc-gen-ts
 
 PROTO_PATH := proto
-GO_PROTO_PATH := go/generated
+GO_PROTO_PATH := backend/generated
 JS_PROTO_PATH := web/src/generated
 PROTO_FILES := $(wildcard $(PROTO_PATH)/*.proto)
 GO_PROTO_FILES := $(patsubst $(PROTO_PATH)/%.proto,$(GO_PROTO_PATH)/%.pb.go,$(PROTO_FILES))
@@ -29,7 +29,7 @@ clean:
 #
 
 $(GO_PROTO_FILES): $(PROTO_FILES)
-	$(PROTOC) -I proto/ $^ --go_out=plugins=grpc:go/generated
+	$(PROTOC) -I proto/ $^ --go_out=plugins=grpc:$(GO_PROTO_PATH)
 
 $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO_FILES): $(PROTO_FILES)
 	NODE_PATH="$(NODE_PATH)" $(PROTOC) \
@@ -50,7 +50,7 @@ proto: $(ALL_PROTO_FILES)
 
 .PHONY: fmt
 fmt:
-	go fmt ./go/...
+	go fmt ./backend/...
 
 .PHONY: web-prod
 web-prod: web/dist/prod/*

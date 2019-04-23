@@ -16,9 +16,9 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 
-	"github.com/toothrot/guff/go/core"
-	"github.com/toothrot/guff/go/generated"
-	"github.com/toothrot/guff/go/services"
+	"github.com/toothrot/guff/backend/core"
+	"github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/services"
 
 	_ "google.golang.org/grpc/grpclog/glogger"
 )

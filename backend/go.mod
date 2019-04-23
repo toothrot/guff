@@ -1,4 +1,4 @@
-module github.com/toothrot/guff/go
+module github.com/toothrot/guff/backend
 
 require (
 	cloud.google.com/go v0.37.4 // indirect

@@ -6,9 +6,9 @@ import (
 	"github.com/golang/glog"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/toothrot/guff/go/core"
+	"github.com/toothrot/guff/backend/core"
 
-	guff_proto "github.com/toothrot/guff/go/generated"
+	guff_proto "github.com/toothrot/guff/backend/generated"
 )
 
 type Users struct {

@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2/google"
 
-	"github.com/toothrot/guff/go/core"
+	"github.com/toothrot/guff/backend/core"
 )
 
 var (

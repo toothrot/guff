@@ -19,11 +19,11 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 
-COPY ./go/go.mod /app
-COPY ./go/go.sum /app
+COPY backend /app
+COPY backend /app
 RUN go mod download
 
-COPY ./go /app/
+COPY backend /app/
 
 RUN CGO_ENABLED=0 go build -o guff
 
