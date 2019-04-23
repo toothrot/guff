@@ -23,6 +23,11 @@ export class GetCurrentUserResponse extends jspb.Message {
   getEmail(): string;
   setEmail(value: string): void;
 
+  hasGoogleOauthConfig(): boolean;
+  clearGoogleOauthConfig(): void;
+  getGoogleOauthConfig(): GoogleOAuthConfig | undefined;
+  setGoogleOauthConfig(value?: GoogleOAuthConfig): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetCurrentUserResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetCurrentUserResponse): GetCurrentUserResponse.AsObject;
@@ -36,6 +41,27 @@ export class GetCurrentUserResponse extends jspb.Message {
 export namespace GetCurrentUserResponse {
   export type AsObject = {
     email: string,
+    googleOauthConfig?: GoogleOAuthConfig.AsObject,
+  }
+}
+
+export class GoogleOAuthConfig extends jspb.Message {
+  getClientId(): string;
+  setClientId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GoogleOAuthConfig.AsObject;
+  static toObject(includeInstance: boolean, msg: GoogleOAuthConfig): GoogleOAuthConfig.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GoogleOAuthConfig, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GoogleOAuthConfig;
+  static deserializeBinaryFromReader(message: GoogleOAuthConfig, reader: jspb.BinaryReader): GoogleOAuthConfig;
+}
+
+export namespace GoogleOAuthConfig {
+  export type AsObject = {
+    clientId: string,
   }
 }
 

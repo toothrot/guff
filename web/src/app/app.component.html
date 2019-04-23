@@ -11,5 +11,11 @@
       User: {{ user.getEmail() }}
     </p>
 </ng-container>
+<button (click)="logIn()">Log In</button>
+<form action="/login" method="post">
+  <fieldset>
+    <input type="submit" value="Log In">
+  </fieldset>
+</form>
 
 <router-outlet></router-outlet>

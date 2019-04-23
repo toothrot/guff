@@ -62,7 +62,7 @@ func (g *guffApp) Serve(ctx context.Context) {
 
 func (g *guffApp) registerRoutes() {
 	g.router.PathPrefix("/guff.proto").Handler(g.grpcWeb)
-	g.router.HandleFunc("/login", g.oauth.LoginHandler)
+	g.router.HandleFunc("/login", g.oauth.LoginHandler).Methods(http.MethodPost)
 	g.router.HandleFunc("/oauth2callback", g.oauth.OAuth2Callback)
 	g.router.PathPrefix("/").Handler(&fileServer{*webRoot})
 }

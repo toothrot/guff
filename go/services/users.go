@@ -29,13 +29,14 @@ func (u *Users) GetCurrentUser(ctx context.Context, req *guff_proto.GetCurrentUs
 			r.Header.Add(k, val)
 		}
 	}
+	resp := &guff_proto.GetCurrentUserResponse{}
 	session, err := u.Config.CookieStore.Get(r, "guff")
 	if err != nil {
 		glog.Errorf("Cookiestore get failure: %q", err)
-		return nil, nil
+		return resp, nil
 	}
-	resp := &guff_proto.GetCurrentUserResponse{
-		Email: session.Values["email"].(string),
+	if email, ok := session.Values["email"].(string); ok {
+		resp.Email = email
 	}
 	return resp, nil
 }
