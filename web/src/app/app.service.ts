@@ -6,7 +6,7 @@ import {HttpClient} from '@angular/common/http';
 import {map, shareReplay, take} from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppService {
   client: UsersServiceClient;
@@ -18,7 +18,7 @@ export class AppService {
   getCurrentUser(): Observable<GetCurrentUserResponse> {
     const request = new GetCurrentUserRequest();
     const clientObservable = bindNodeCallback<GetCurrentUserResponse>(
-      this.client.getCurrentUser.bind(this.client, request, null)
+      this.client.getCurrentUser.bind(this.client, request, {Authorization: 'Bearer ' + localStorage.getItem('token')}),
     );
     return clientObservable();
   }
@@ -29,7 +29,7 @@ export class AppService {
       map((resp => {
         const url = new URL(resp.getGoogleOauthConfig().getLoginurl());
         url.searchParams.set('response_type', 'id_token');
-        url.searchParams.set('redirect_uri', 'http://localhost:8080');
+        url.searchParams.set('redirect_uri', 'http://localhost:8080/oauth2callback');
         return url.toString();
       })),
       shareReplay(),

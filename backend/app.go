@@ -6,6 +6,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 
@@ -35,8 +37,13 @@ type guffApp struct {
 func (g *guffApp) Serve(ctx context.Context) {
 	g.router = mux.NewRouter()
 
+	am, err := services.NewAuthMiddleware(ctx, g.Config.OAuthConfig)
+	if err != nil {
+		glog.Fatalf("Error creating auth middleware: %q", err)
+	}
+
 	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
-	g.grpcServer = grpc.NewServer()
+	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
 	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.Config})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
 
@@ -73,6 +80,12 @@ func (f *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Error parsing absolute path from %q", *webRoot)
 	}
 	glog.Infof("Serving from root %q", abs)
+	if _, err := os.Stat(path.Join(abs, r.URL.Path)); os.IsNotExist(err) {
+		// Fall-back to angular's router.
+		glog.Infof("welp %q %q %q", r.URL.Path, err, path.Join(abs, "/index.html"))
+		http.ServeFile(w, r, path.Join(abs, "/index.html"))
+		return
+	}
 
 	glog.Infof("%q: %q", r.Method, r.URL.Path)
 	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
