@@ -9,10 +9,12 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -103,11 +105,11 @@ type fakeService struct {
 
 func (f *fakeService) TestEcho(ctx context.Context, req *guff_proto.TestEchoRequest) (*guff_proto.TestEchoResponse, error) {
 	return &guff_proto.TestEchoResponse{
-		Message: fmt.Sprintf("hiya %s", EmailFromContext(ctx)),
+		Message: strings.TrimSpace(fmt.Sprintf("hiya %s", EmailFromContext(ctx))),
 	}, nil
 }
 
-func newTestClient(ctx context.Context, t *testing.T, opt ...grpc.ServerOption) (client guff_proto.TestServiceClient, cleanup func()) {
+func newTestServer(t *testing.T, opt ...grpc.ServerOption) (addr string, cleanup func()) {
 	// Arrange: Setup fake GRPC handler.
 	server := grpc.NewServer(opt...)
 	guff_proto.RegisterTestServiceServer(server, &fakeService{})
@@ -118,15 +120,16 @@ func newTestClient(ctx context.Context, t *testing.T, opt ...grpc.ServerOption) 
 		t.Fatalf("net.Listen(%q, %q) = _, %q, want no error", "tcp", ":0", err)
 	}
 	go server.Serve(lis)
-	cleanup = server.Stop
+	return lis.Addr().String(), server.Stop
+}
 
+func newTestClient(ctx context.Context, t *testing.T, addr string) guff_proto.TestServiceClient {
 	// Arrange: Setup client
-	conn, err := grpc.DialContext(ctx, lis.Addr().String(), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure())
 	if err != nil {
-		t.Fatalf("grpc.Dial(%q) = _, %q, want no error", lis.Addr().String(), err)
+		t.Fatalf("grpc.Dial(%q) = _, %q, want no error", addr, err)
 	}
-	client = guff_proto.NewTestServiceClient(conn)
-	return client, cleanup
+	return guff_proto.NewTestServiceClient(conn)
 }
 
 func newKeyServer(t *testing.T) (server *httptest.Server, cleanup func()) {
@@ -139,7 +142,7 @@ func newKeyServer(t *testing.T) (server *httptest.Server, cleanup func()) {
 	return s, s.Close
 }
 
-func TestInterceptorAuthenticated(t *testing.T) {
+func TestAuthMiddleware(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -147,29 +150,64 @@ func TestInterceptorAuthenticated(t *testing.T) {
 	defer ksCleanup()
 
 	// Arrange: Configure middleware
-	c := &oauth2.Config{
+	config := &oauth2.Config{
 		ClientID: "abc123",
 		Endpoint: oauth2.Endpoint{AuthURL: ks.URL},
 	}
-	m, err := NewAuthMiddleware(ctx, c)
+	m, err := NewAuthMiddleware(ctx, config)
 	if err != nil {
-		t.Fatalf("NewAuthMiddleware(%v, %#v) = _, %q, want no error", ctx, c, err)
+		t.Fatalf("NewAuthMiddleware(%v, %#v) = _, %q, want no error", ctx, config, err)
 	}
-	client, clientCleanup := newTestClient(ctx, t, grpc.UnaryInterceptor(m.ServerInterceptor))
-	defer clientCleanup()
+	addr, stop := newTestServer(t, grpc.UnaryInterceptor(m.ServerInterceptor))
+	defer stop()
 
-	// Act: Do request
-	tok, _ := newToken(c, oidc.UserInfo{Email: "mario@example.com"})
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", fmt.Sprintf("Bearer %s", tok))
-	req := &guff_proto.TestEchoRequest{Message: "hiya"}
-	resp, err := client.TestEcho(ctx, req)
-	if err != nil {
-		t.Errorf("client.TestEcho(%v, %#v) = _, %q, want no error", ctx, req, err)
+	tok, _ := newToken(config, oidc.UserInfo{Email: "mario@example.com"})
+
+	cases := []struct{
+		desc string
+		md metadata.MD
+		want *guff_proto.TestEchoResponse
+	}{
+		{
+			desc: "empty metadata",
+			md: metadata.MD{},
+			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+		},
+		{
+			desc: "empty authorization value",
+			md: metadata.Pairs("authorization", ""),
+			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+		},
+		{
+			desc: "malformated authorization value",
+			md: metadata.Pairs("authorization", "barf"),
+			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+		},
+		{
+			desc: "invalid token",
+			md: metadata.Pairs("authorization", "Bearer garbage"),
+			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+		},
+		{
+			desc: "valid token",
+			md: metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tok)),
+			want: &guff_proto.TestEchoResponse{Message: "hiya mario@example.com"},
+		},
+	}
+	for _, c := range cases {
+		// Act: Do request
+		client := newTestClient(ctx, t, addr)
+		ctx = metadata.NewOutgoingContext(ctx, c.md)
+		req := &guff_proto.TestEchoRequest{Message: "hiya"}
+		resp, err := client.TestEcho(ctx, req)
+		if err != nil {
+			t.Errorf("%q: client.TestEcho(%v, %#v) = _, %q, want no error", c.desc, ctx, req, err)
+		}
+
+		// Assert: response
+		if diff := cmp.Diff(c.want, resp); diff != "" {
+			t.Errorf("client.TestEcho(%v, %#v) mismatch (-want +got):\n%s", ctx, req, diff)
+		}
 	}
 
-	// Assert: response
-	want := "hiya mario@example.com"
-	if resp.Message != want {
-		t.Errorf("resp.Message = %q, wanted %q", resp.Message, want)
-	}
 }
