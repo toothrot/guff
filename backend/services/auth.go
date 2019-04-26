@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/coreos/go-oidc"
+	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -27,14 +28,20 @@ func NewAuthMiddleware(ctx context.Context, c *oauth2.Config) (*AuthMiddleware, 
 	}
 	v := p.Verifier(&oidc.Config{ClientID: c.ClientID})
 	return &AuthMiddleware{
-		provider: p,
 		verifier: v,
 	}, nil
 }
 
+type Provider interface {
+	Verifier(config *oidc.Config) *oidc.IDTokenVerifier
+}
+
+type IDTokenVerifier interface {
+	Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken, error)
+}
+
 type AuthMiddleware struct {
-	provider *oidc.Provider
-	verifier *oidc.IDTokenVerifier
+	verifier IDTokenVerifier
 }
 
 func (a *AuthMiddleware) ServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
@@ -51,16 +58,15 @@ func (a *AuthMiddleware) ServerInterceptor(ctx context.Context, req interface{},
 	tok := strings.TrimPrefix(auth[0], "Bearer ")
 	token, err := a.verifier.Verify(ctx, tok)
 	if err != nil {
+		glog.Errorf("failed to verify: %q", err)
 		return handler(ctx, req)
 	}
 
-	var claims struct {
-		Email string `json:"email"`
-	}
-	if err := token.Claims(&claims); err != nil {
+	var userInfo oidc.UserInfo
+	if err := token.Claims(&userInfo); err != nil {
 		return handler(ctx, req)
 	}
-	ctx = context.WithValue(ctx, emailKey, claims.Email)
+	ctx = context.WithValue(ctx, emailKey, userInfo.Email)
 
 	return handler(ctx, req)
 }

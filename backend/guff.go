@@ -29,7 +29,7 @@ func main() {
 
 	b, err := getSecret(*sessionKeyPath)
 	if err != nil {
-		glog.Fatalf("error getting secret %q: %q", sessionKeyPath, err)
+		glog.Fatalf("error getting secret %q: %q", *sessionKeyPath, err)
 	}
 	store := sessions.NewCookieStore(b)
 

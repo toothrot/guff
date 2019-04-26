@@ -1,0 +1,16 @@
+syntax = 'proto3';
+
+package guff.proto;
+
+// TestService is used for a simple service in unit tests.
+service TestService {
+  rpc TestEcho(TestEchoRequest) returns (TestEchoResponse) {}
+}
+
+message TestEchoRequest {
+  string message = 1;
+}
+
+message TestEchoResponse {
+  string message = 1;
+}

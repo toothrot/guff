@@ -45,6 +45,20 @@ web/dist/prod/%: $(WEB_SOURCES) $(ALL_PROTO_FILES)
 proto: $(ALL_PROTO_FILES)
 
 #
+# TEST
+#
+.phony: test
+test: go-test
+
+.phony: go-test
+go-test:
+	cd backend; go test ./...
+
+.phony: watch-go-test
+watch-go-test:
+	git ls-files | entr bash -c "time $(MAKE) go-test"
+
+#
 # BUILD
 #
 

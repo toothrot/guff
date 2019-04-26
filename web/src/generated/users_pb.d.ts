@@ -50,7 +50,6 @@ export class GoogleOAuthConfig extends jspb.Message {
   setClientId(value: string): void;
 
   getLoginurl(): string;
-
   setLoginurl(value: string): void;
 
   serializeBinary(): Uint8Array;
