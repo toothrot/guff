@@ -1,4 +1,4 @@
-package services
+package auth
 
 import (
 	"context"
@@ -107,32 +107,10 @@ func (f *fakeService) TestEcho(ctx context.Context, req *guff_proto.TestEchoRequ
 	}, nil
 }
 
-func TestInterceptorAuthenticated(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Arrange: Set up JWK keyserver.
-	ks := &keyServer{t: t}
-	s := httptest.NewServer(ks)
-	defer s.Close()
-	ks.provider.AuthURL = s.URL
-	ks.provider.Issuer = s.URL
-	ks.provider.JWKSURL = s.URL
-
-	// Arrange: Configure middleware
-	c := &oauth2.Config{
-		ClientID: "abc123",
-		Endpoint: oauth2.Endpoint{AuthURL: s.URL},
-	}
-	m, err := NewAuthMiddleware(ctx, c)
-	if err != nil {
-		t.Fatalf("NewAuthMiddleware(%v, %#v) = _, %q, want no error", ctx, c, err)
-	}
-	server := grpc.NewServer(grpc.UnaryInterceptor(m.ServerInterceptor))
-
+func newTestClient(ctx context.Context, t *testing.T, opt ...grpc.ServerOption) (client guff_proto.TestServiceClient, cleanup func()) {
 	// Arrange: Setup fake GRPC handler.
-	service := &fakeService{}
-	guff_proto.RegisterTestServiceServer(server, service)
+	server := grpc.NewServer(opt...)
+	guff_proto.RegisterTestServiceServer(server, &fakeService{})
 
 	// Arrange: Start GRPC server.
 	lis, err := net.Listen("tcp", ":0")
@@ -140,14 +118,45 @@ func TestInterceptorAuthenticated(t *testing.T) {
 		t.Fatalf("net.Listen(%q, %q) = _, %q, want no error", "tcp", ":0", err)
 	}
 	go server.Serve(lis)
-	defer server.Stop()
+	cleanup = server.Stop
 
 	// Arrange: Setup client
 	conn, err := grpc.DialContext(ctx, lis.Addr().String(), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("grpc.Dial(%q) = _, %q, want no error", lis.Addr().String(), err)
 	}
-	client := guff_proto.NewTestServiceClient(conn)
+	client = guff_proto.NewTestServiceClient(conn)
+	return client, cleanup
+}
+
+func newKeyServer(t *testing.T) (server *httptest.Server, cleanup func()) {
+	// Arrange: Set up JWK keyserver.
+	ks := &keyServer{t: t}
+	s := httptest.NewServer(ks)
+	ks.provider.AuthURL = s.URL
+	ks.provider.Issuer = s.URL
+	ks.provider.JWKSURL = s.URL
+	return s, s.Close
+}
+
+func TestInterceptorAuthenticated(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ks, ksCleanup := newKeyServer(t)
+	defer ksCleanup()
+
+	// Arrange: Configure middleware
+	c := &oauth2.Config{
+		ClientID: "abc123",
+		Endpoint: oauth2.Endpoint{AuthURL: ks.URL},
+	}
+	m, err := NewAuthMiddleware(ctx, c)
+	if err != nil {
+		t.Fatalf("NewAuthMiddleware(%v, %#v) = _, %q, want no error", ctx, c, err)
+	}
+	client, clientCleanup := newTestClient(ctx, t, grpc.UnaryInterceptor(m.ServerInterceptor))
+	defer clientCleanup()
 
 	// Act: Do request
 	tok, _ := newToken(c, oidc.UserInfo{Email: "mario@example.com"})

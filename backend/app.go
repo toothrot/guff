@@ -18,6 +18,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 
+	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
 	"github.com/toothrot/guff/backend/services"
@@ -37,7 +38,7 @@ type guffApp struct {
 func (g *guffApp) Serve(ctx context.Context) {
 	g.router = mux.NewRouter()
 
-	am, err := services.NewAuthMiddleware(ctx, g.Config.OAuthConfig)
+	am, err := auth.NewAuthMiddleware(ctx, g.Config.OAuthConfig)
 	if err != nil {
 		glog.Fatalf("Error creating auth middleware: %q", err)
 	}
