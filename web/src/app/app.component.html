@@ -11,12 +11,12 @@
   <p>
     User: {{ user.getEmail() }}
   </p>
-
-  <form [action]="loginURL | async" method="post">
-    <fieldset>
-      <input type="submit" value="Log In">
-    </fieldset>
-  </form>
 </ng-container>
+
+<form [action]="loginURL | async" method="post">
+  <fieldset>
+    <input type="submit" value="Log In">
+  </fieldset>
+</form>
 
 <router-outlet></router-outlet>

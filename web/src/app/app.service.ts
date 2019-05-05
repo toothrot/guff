@@ -1,14 +1,14 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnInit} from '@angular/core';
 import {GetCurrentUserRequest, GetCurrentUserResponse} from '../generated/users_pb';
-import {bindNodeCallback, Observable} from 'rxjs';
+import {bindNodeCallback, Observable, from, of} from 'rxjs';
 import {UsersServiceClient} from '../generated/UsersServiceClientPb';
 import {HttpClient} from '@angular/common/http';
-import {map, shareReplay, take} from 'rxjs/operators';
+import {map, shareReplay, take, tap, mergeMap, catchError} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AppService {
+export class AppService  {
   client: UsersServiceClient;
 
   constructor(private httpClient: HttpClient) {
@@ -29,7 +29,7 @@ export class AppService {
       map((resp => {
         const url = new URL(resp.getGoogleOauthConfig().getLoginurl());
         url.searchParams.set('response_type', 'id_token');
-        url.searchParams.set('redirect_uri', 'http://localhost:8080/oauth2callback');
+        url.searchParams.set('redirect_uri', 'http://localhost:8080');
         return url.toString();
       })),
       shareReplay(),

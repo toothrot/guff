@@ -9,7 +9,7 @@ import {GetCurrentUserRequest, GetCurrentUserResponse} from '../../generated/use
 @Injectable({
   providedIn: 'root',
 })
-export class OAuthCallbackService {
+export class OAuthService {
   client: UsersServiceClient;
 
   constructor(private httpClient: HttpClient) {

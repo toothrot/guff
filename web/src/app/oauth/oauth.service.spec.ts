@@ -1,12 +1,12 @@
 import {TestBed} from '@angular/core/testing';
 
-import {OAuthCallbackService} from './oauth-callback.service';
+import {OAuthService} from './oauth.service';
 
 describe('OauthCallbackService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: OAuthCallbackService = TestBed.get(OAuthCallbackService);
+    const service: OAuthService = TestBed.get(OAuthService);
     expect(service).toBeTruthy();
   });
 });
