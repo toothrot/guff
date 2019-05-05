@@ -40,10 +40,15 @@ type IDTokenVerifier interface {
 	Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken, error)
 }
 
+// AuthMiddleware implements middleware for validating tokens.
 type AuthMiddleware struct {
 	verifier IDTokenVerifier
 }
 
+// ServerInterceptor is a GRPC Unary interceptor for validating Authorization headers.
+//
+// It relies on the go-oidc library for validation. The underlying library ensures that the Client ID matches the audience
+// of the token, and verifies that the signature is correct for the provider. It also handles caching of keys.
 func (a *AuthMiddleware) ServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
