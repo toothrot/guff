@@ -7,7 +7,7 @@
  */
 // GENERATED CODE -- DO NOT EDIT!
 
-goog.provide('proto.guff.proto.GetCurrentUserRequest');
+goog.provide('proto.guff.proto.GetDivisionsResponse');
 
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
@@ -24,12 +24,12 @@ goog.require('jspb.Message');
  * @extends {jspb.Message}
  * @constructor
  */
-proto.guff.proto.GetCurrentUserRequest = function(opt_data) {
+proto.guff.proto.GetDivisionsResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.guff.proto.GetCurrentUserRequest, jspb.Message);
+goog.inherits(proto.guff.proto.GetDivisionsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.guff.proto.GetCurrentUserRequest.displayName = 'proto.guff.proto.GetCurrentUserRequest';
+  proto.guff.proto.GetDivisionsResponse.displayName = 'proto.guff.proto.GetDivisionsResponse';
 }
 
 
@@ -44,8 +44,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.guff.proto.GetCurrentUserRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.guff.proto.GetCurrentUserRequest.toObject(opt_includeInstance, this);
+proto.guff.proto.GetDivisionsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.guff.proto.GetDivisionsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -54,11 +54,11 @@ proto.guff.proto.GetCurrentUserRequest.prototype.toObject = function(opt_include
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.guff.proto.GetCurrentUserRequest} msg The msg instance to transform.
+ * @param {!proto.guff.proto.GetDivisionsResponse} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.guff.proto.GetCurrentUserRequest.toObject = function(includeInstance, msg) {
+proto.guff.proto.GetDivisionsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
 
   };
@@ -74,23 +74,23 @@ proto.guff.proto.GetCurrentUserRequest.toObject = function(includeInstance, msg)
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.guff.proto.GetCurrentUserRequest}
+ * @return {!proto.guff.proto.GetDivisionsResponse}
  */
-proto.guff.proto.GetCurrentUserRequest.deserializeBinary = function(bytes) {
+proto.guff.proto.GetDivisionsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.guff.proto.GetCurrentUserRequest;
-  return proto.guff.proto.GetCurrentUserRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.guff.proto.GetDivisionsResponse;
+  return proto.guff.proto.GetDivisionsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.guff.proto.GetCurrentUserRequest} msg The message object to deserialize into.
+ * @param {!proto.guff.proto.GetDivisionsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.guff.proto.GetCurrentUserRequest}
+ * @return {!proto.guff.proto.GetDivisionsResponse}
  */
-proto.guff.proto.GetCurrentUserRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.guff.proto.GetDivisionsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -110,9 +110,9 @@ proto.guff.proto.GetCurrentUserRequest.deserializeBinaryFromReader = function(ms
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.guff.proto.GetCurrentUserRequest.prototype.serializeBinary = function() {
+proto.guff.proto.GetDivisionsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.guff.proto.GetCurrentUserRequest.serializeBinaryToWriter(this, writer);
+  proto.guff.proto.GetDivisionsResponse.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -120,11 +120,11 @@ proto.guff.proto.GetCurrentUserRequest.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.guff.proto.GetCurrentUserRequest} message
+ * @param {!proto.guff.proto.GetDivisionsResponse} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.guff.proto.GetCurrentUserRequest.serializeBinaryToWriter = function(message, writer) {
+proto.guff.proto.GetDivisionsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 

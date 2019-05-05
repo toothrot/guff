@@ -10,10 +10,10 @@
 import * as grpcWeb from 'grpc-web';
 
 import {
-  GetCurrentUserRequest,
-  GetCurrentUserResponse} from './users_pb';
+  TestEchoRequest,
+  TestEchoResponse} from './test_pb';
 
-export class UsersServiceClient {
+export class TestServiceClient {
   client_: grpcWeb.AbstractClientBase;
   hostname_: string;
   credentials_: null | { [index: string]: string; };
@@ -31,25 +31,25 @@ export class UsersServiceClient {
     this.options_ = options;
   }
 
-  methodInfoGetCurrentUser = new grpcWeb.AbstractClientBase.MethodInfo(
-    GetCurrentUserResponse,
-    (request: GetCurrentUserRequest) => {
+  methodInfoTestEcho = new grpcWeb.AbstractClientBase.MethodInfo(
+    TestEchoResponse,
+    (request: TestEchoRequest) => {
       return request.serializeBinary();
     },
-    GetCurrentUserResponse.deserializeBinary
+    TestEchoResponse.deserializeBinary
   );
 
-  getCurrentUser(
-    request: GetCurrentUserRequest,
+  testEcho(
+    request: TestEchoRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.Error,
-               response: GetCurrentUserResponse) => void) {
+               response: TestEchoResponse) => void) {
     return this.client_.rpcCall(
       this.hostname_ +
-        '/guff.proto.UsersService/GetCurrentUser',
+        '/guff.proto.TestService/TestEcho',
       request,
       metadata || {},
-      this.methodInfoGetCurrentUser,
+      this.methodInfoTestEcho,
       callback);
   }
 

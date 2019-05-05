@@ -7,12 +7,11 @@
  */
 // GENERATED CODE -- DO NOT EDIT!
 
-goog.provide('proto.guff.proto.GetCurrentUserResponse');
+goog.provide('proto.guff.proto.GoogleOAuthConfig');
 
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
 goog.require('jspb.Message');
-goog.require('proto.guff.proto.GoogleOAuthConfig');
 
 
 /**
@@ -25,12 +24,12 @@ goog.require('proto.guff.proto.GoogleOAuthConfig');
  * @extends {jspb.Message}
  * @constructor
  */
-proto.guff.proto.GetCurrentUserResponse = function(opt_data) {
+proto.guff.proto.GoogleOAuthConfig = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.guff.proto.GetCurrentUserResponse, jspb.Message);
+goog.inherits(proto.guff.proto.GoogleOAuthConfig, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.guff.proto.GetCurrentUserResponse.displayName = 'proto.guff.proto.GetCurrentUserResponse';
+  proto.guff.proto.GoogleOAuthConfig.displayName = 'proto.guff.proto.GoogleOAuthConfig';
 }
 
 
@@ -45,8 +44,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.guff.proto.GetCurrentUserResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.guff.proto.GetCurrentUserResponse.toObject(opt_includeInstance, this);
+proto.guff.proto.GoogleOAuthConfig.prototype.toObject = function(opt_includeInstance) {
+  return proto.guff.proto.GoogleOAuthConfig.toObject(opt_includeInstance, this);
 };
 
 
@@ -55,14 +54,14 @@ proto.guff.proto.GetCurrentUserResponse.prototype.toObject = function(opt_includ
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.guff.proto.GetCurrentUserResponse} msg The msg instance to transform.
+ * @param {!proto.guff.proto.GoogleOAuthConfig} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.guff.proto.GetCurrentUserResponse.toObject = function(includeInstance, msg) {
+proto.guff.proto.GoogleOAuthConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    email: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    googleOauthConfig: (f = msg.getGoogleOauthConfig()) && proto.guff.proto.GoogleOAuthConfig.toObject(includeInstance, f)
+    clientId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    loginurl: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -76,23 +75,23 @@ proto.guff.proto.GetCurrentUserResponse.toObject = function(includeInstance, msg
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.guff.proto.GetCurrentUserResponse}
+ * @return {!proto.guff.proto.GoogleOAuthConfig}
  */
-proto.guff.proto.GetCurrentUserResponse.deserializeBinary = function(bytes) {
+proto.guff.proto.GoogleOAuthConfig.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.guff.proto.GetCurrentUserResponse;
-  return proto.guff.proto.GetCurrentUserResponse.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.guff.proto.GoogleOAuthConfig;
+  return proto.guff.proto.GoogleOAuthConfig.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.guff.proto.GetCurrentUserResponse} msg The message object to deserialize into.
+ * @param {!proto.guff.proto.GoogleOAuthConfig} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.guff.proto.GetCurrentUserResponse}
+ * @return {!proto.guff.proto.GoogleOAuthConfig}
  */
-proto.guff.proto.GetCurrentUserResponse.deserializeBinaryFromReader = function(msg, reader) {
+proto.guff.proto.GoogleOAuthConfig.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -101,12 +100,11 @@ proto.guff.proto.GetCurrentUserResponse.deserializeBinaryFromReader = function(m
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setEmail(value);
+      msg.setClientId(value);
       break;
     case 2:
-      var value = new proto.guff.proto.GoogleOAuthConfig;
-      reader.readMessage(value,proto.guff.proto.GoogleOAuthConfig.deserializeBinaryFromReader);
-      msg.setGoogleOauthConfig(value);
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLoginurl(value);
       break;
     default:
       reader.skipField();
@@ -121,9 +119,9 @@ proto.guff.proto.GetCurrentUserResponse.deserializeBinaryFromReader = function(m
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.guff.proto.GetCurrentUserResponse.prototype.serializeBinary = function() {
+proto.guff.proto.GoogleOAuthConfig.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.guff.proto.GetCurrentUserResponse.serializeBinaryToWriter(this, writer);
+  proto.guff.proto.GoogleOAuthConfig.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -131,72 +129,56 @@ proto.guff.proto.GetCurrentUserResponse.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.guff.proto.GetCurrentUserResponse} message
+ * @param {!proto.guff.proto.GoogleOAuthConfig} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.guff.proto.GetCurrentUserResponse.serializeBinaryToWriter = function(message, writer) {
+proto.guff.proto.GoogleOAuthConfig.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getEmail();
+  f = message.getClientId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getGoogleOauthConfig();
-  if (f != null) {
-    writer.writeMessage(
+  f = message.getLoginurl();
+  if (f.length > 0) {
+    writer.writeString(
       2,
-      f,
-      proto.guff.proto.GoogleOAuthConfig.serializeBinaryToWriter
+      f
     );
   }
 };
 
 
 /**
- * optional string email = 1;
+ * optional string client_id = 1;
  * @return {string}
  */
-proto.guff.proto.GetCurrentUserResponse.prototype.getEmail = function() {
+proto.guff.proto.GoogleOAuthConfig.prototype.getClientId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /** @param {string} value */
-proto.guff.proto.GetCurrentUserResponse.prototype.setEmail = function(value) {
+proto.guff.proto.GoogleOAuthConfig.prototype.setClientId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional GoogleOAuthConfig google_oauth_config = 2;
- * @return {?proto.guff.proto.GoogleOAuthConfig}
+ * optional string loginURL = 2;
+ * @return {string}
  */
-proto.guff.proto.GetCurrentUserResponse.prototype.getGoogleOauthConfig = function() {
-  return /** @type{?proto.guff.proto.GoogleOAuthConfig} */ (
-    jspb.Message.getWrapperField(this, proto.guff.proto.GoogleOAuthConfig, 2));
+proto.guff.proto.GoogleOAuthConfig.prototype.getLoginurl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
-/** @param {?proto.guff.proto.GoogleOAuthConfig|undefined} value */
-proto.guff.proto.GetCurrentUserResponse.prototype.setGoogleOauthConfig = function(value) {
-  jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-proto.guff.proto.GetCurrentUserResponse.prototype.clearGoogleOauthConfig = function() {
-  this.setGoogleOauthConfig(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.guff.proto.GetCurrentUserResponse.prototype.hasGoogleOauthConfig = function() {
-  return jspb.Message.getField(this, 2) != null;
+/** @param {string} value */
+proto.guff.proto.GoogleOAuthConfig.prototype.setLoginurl = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

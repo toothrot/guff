@@ -1,10 +1,10 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {UsersServiceClient} from 'src/generated/UsersServiceClientPb';
-import {GetCurrentUserRequest, GetCurrentUserResponse} from '../../generated/users_pb';
 import {Observable, of, throwError} from 'rxjs';
 import {mergeMap, tap} from 'rxjs/operators';
 import {bindNodeCallback} from 'rxjs/internal/observable/bindNodeCallback';
+import {GetCurrentUserRequest, GetCurrentUserResponse} from '../../generated/users_pb';
 
 @Injectable({
   providedIn: 'root',

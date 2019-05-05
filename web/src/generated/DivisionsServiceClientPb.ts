@@ -10,10 +10,10 @@
 import * as grpcWeb from 'grpc-web';
 
 import {
-  GetCurrentUserRequest,
-  GetCurrentUserResponse} from './users_pb';
+  GetDivisionsRequest,
+  GetDivisionsResponse} from './divisions_pb';
 
-export class UsersServiceClient {
+export class DivisionsServiceClient {
   client_: grpcWeb.AbstractClientBase;
   hostname_: string;
   credentials_: null | { [index: string]: string; };
@@ -31,25 +31,25 @@ export class UsersServiceClient {
     this.options_ = options;
   }
 
-  methodInfoGetCurrentUser = new grpcWeb.AbstractClientBase.MethodInfo(
-    GetCurrentUserResponse,
-    (request: GetCurrentUserRequest) => {
+  methodInfoGetDivisions = new grpcWeb.AbstractClientBase.MethodInfo(
+    GetDivisionsResponse,
+    (request: GetDivisionsRequest) => {
       return request.serializeBinary();
     },
-    GetCurrentUserResponse.deserializeBinary
+    GetDivisionsResponse.deserializeBinary
   );
 
-  getCurrentUser(
-    request: GetCurrentUserRequest,
+  getDivisions(
+    request: GetDivisionsRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.Error,
-               response: GetCurrentUserResponse) => void) {
+               response: GetDivisionsResponse) => void) {
     return this.client_.rpcCall(
       this.hostname_ +
-        '/guff.proto.UsersService/GetCurrentUser',
+        '/guff.proto.DivisionsService/GetDivisions',
       request,
       metadata || {},
-      this.methodInfoGetCurrentUser,
+      this.methodInfoGetDivisions,
       callback);
   }
 
