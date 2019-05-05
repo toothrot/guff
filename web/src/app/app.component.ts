@@ -1,11 +1,12 @@
 import {Component, OnInit} from '@angular/core';
 import {AppService} from './app.service';
-import {Observable, from, of} from 'rxjs';
+import {from, Observable} from 'rxjs';
 import {GetCurrentUserResponse} from 'src/generated/users_pb';
 import {ActivatedRoute, Router} from '@angular/router';
-import {map, mergeMap, tap, catchError} from 'rxjs/operators';
+import {first, map, mergeMap, shareReplay, tap} from 'rxjs/operators';
 import {OAuthService} from './oauth/oauth.service';
 import {filter} from 'rxjs/internal/operators/filter';
+import {GetDivisionsResponse} from '../generated/divisions_pb';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,12 @@ import {filter} from 'rxjs/internal/operators/filter';
 export class AppComponent implements OnInit {
   title = 'web';
   currentUser: Observable<GetCurrentUserResponse>;
+  divisions: Observable<GetDivisionsResponse>;
   loginURL: Observable<string>;
 
   constructor(private appService: AppService, private route: ActivatedRoute, private oauthService: OAuthService, private router: Router) {
+    this.loginURL = this.appService.oAuthURL().pipe(shareReplay(1));
+    this.divisions = this.appService.getDivisions().pipe(shareReplay(1));
   }
 
   ngOnInit() {
@@ -36,8 +40,5 @@ export class AppComponent implements OnInit {
       // catchError(err => of(err.toString())),
       tap(() => from(this.router.navigateByUrl('/'))),
     );
-
-    // this.currentUser = this.appService.getCurrentUser();
-    this.loginURL = this.appService.oAuthURL();
   }
 }

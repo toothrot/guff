@@ -8,4 +8,7 @@ import (
 type Config struct {
 	OAuthConfig *oauth2.Config
 	CookieStore *sessions.CookieStore
+
+	// URL to scrape for list of Programs (divisions in a league)
+	ProgramsURL string
 }

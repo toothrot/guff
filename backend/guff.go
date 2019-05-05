@@ -20,6 +20,7 @@ var (
 	port            = flag.String("port", "8080", "Port to listen for HTTP requests.")
 	sessionKeyPath  = flag.String("session_key", "/run/secrets/session-key", "Session key secret file path")
 	oauthConfigPath = flag.String("oauth_config", "/run/secrets/oauth.json", "OAuth config JSON file path (see http://golang.org/x/oauth2/google#ConfigFromJSON)")
+	divisionsURL    = flag.String("divisions_url", "https://royalpalmsshuffle.leagueapps.com/leagues?state=LIVE&locationId=&seasonId=&days=&levelId=", "URL of Divisions page")
 )
 
 func main() {
@@ -39,7 +40,11 @@ func main() {
 		glog.Errorf("google.ConfigFromJSON() returned error %q", err)
 	}
 	oc.Scopes = []string{"email", "profile"}
-	conf := &core.Config{OAuthConfig: oc, CookieStore: store}
+	conf := &core.Config{
+		OAuthConfig: oc,
+		CookieStore: store,
+		ProgramsURL: *divisionsURL,
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

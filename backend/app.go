@@ -46,6 +46,8 @@ func (g *guffApp) Serve(ctx context.Context) {
 	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
 	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
 	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.Config})
+	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.Config})
+	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.DivisionService{})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
 
 	g.registerRoutes()

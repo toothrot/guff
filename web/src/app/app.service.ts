@@ -1,26 +1,36 @@
-import {Injectable, OnInit} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {GetCurrentUserRequest, GetCurrentUserResponse} from '../generated/users_pb';
-import {bindNodeCallback, Observable, from, of} from 'rxjs';
+import {bindNodeCallback, Observable} from 'rxjs';
 import {UsersServiceClient} from '../generated/UsersServiceClientPb';
 import {HttpClient} from '@angular/common/http';
-import {map, shareReplay, take, tap, mergeMap, catchError} from 'rxjs/operators';
+import {map, shareReplay, take} from 'rxjs/operators';
+import {GetDivisionsRequest, GetDivisionsResponse} from '../generated/divisions_pb';
+import {DivisionsServiceClient} from '../generated/DivisionsServiceClientPb';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AppService  {
+export class AppService {
   client: UsersServiceClient;
+  divisionsClient: DivisionsServiceClient;
 
   constructor(private httpClient: HttpClient) {
     this.client = new UsersServiceClient('http://localhost:8080', {}, {});
+    this.divisionsClient = new DivisionsServiceClient('http://localhost:8080', {}, {});
   }
 
   getCurrentUser(): Observable<GetCurrentUserResponse> {
     const request = new GetCurrentUserRequest();
-    const clientObservable = bindNodeCallback<GetCurrentUserResponse>(
+    return bindNodeCallback<GetCurrentUserResponse>(
       this.client.getCurrentUser.bind(this.client, request, {Authorization: 'Bearer ' + localStorage.getItem('token')}),
-    );
-    return clientObservable();
+    )();
+  }
+
+  getDivisions(): Observable<GetDivisionsResponse> {
+    const request = new GetDivisionsRequest();
+    return bindNodeCallback<GetDivisionsResponse>(
+      this.divisionsClient.getDivisions.bind(this.divisionsClient, request, {}),
+    )();
   }
 
   oAuthURL(): Observable<string> {

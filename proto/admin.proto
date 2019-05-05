@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package guff.proto;
+
+service AdminService {
+  rpc Scrape(ScrapeRequest) returns (ScrapeResponse) {};
+}
+
+message ScrapeRequest {};
+
+message ScrapeResponse {};
+

@@ -11,5 +11,9 @@ message GetDivisionsRequest {
 }
 
 message GetDivisionsResponse {
+  repeated Division divisions = 1;
+}
 
+message Division {
+  string id = 1;
 }
