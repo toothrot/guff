@@ -16,7 +16,7 @@ type authContextKey int
 
 const emailKey authContextKey = iota
 
-func NewAuthMiddleware(ctx context.Context, c *oauth2.Config) (*AuthMiddleware, error) {
+func NewMiddleware(ctx context.Context, c *oauth2.Config) (*Middleware, error) {
 	issuer, err := url.Parse(c.Endpoint.AuthURL)
 	if err != nil {
 		return nil, err
@@ -27,21 +27,17 @@ func NewAuthMiddleware(ctx context.Context, c *oauth2.Config) (*AuthMiddleware, 
 		return nil, err
 	}
 	v := p.Verifier(&oidc.Config{ClientID: c.ClientID})
-	return &AuthMiddleware{
+	return &Middleware{
 		verifier: v,
 	}, nil
-}
-
-type Provider interface {
-	Verifier(config *oidc.Config) *oidc.IDTokenVerifier
 }
 
 type IDTokenVerifier interface {
 	Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken, error)
 }
 
-// AuthMiddleware implements middleware for validating tokens.
-type AuthMiddleware struct {
+// Middleware implements middleware for validating tokens.
+type Middleware struct {
 	verifier IDTokenVerifier
 }
 
@@ -49,7 +45,7 @@ type AuthMiddleware struct {
 //
 // It relies on the go-oidc library for validation. The underlying library ensures that the Client ID matches the audience
 // of the token, and verifies that the signature is correct for the provider. It also handles caching of keys.
-func (a *AuthMiddleware) ServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func (a *Middleware) ServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return handler(ctx, req)

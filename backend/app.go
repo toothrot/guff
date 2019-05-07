@@ -29,7 +29,7 @@ import (
 func newGuffApp(ctx context.Context, config *core.Config) *guffApp {
 	g := &guffApp{config: config}
 	g.router = mux.NewRouter()
-	am, err := auth.NewAuthMiddleware(ctx, g.config.OAuthConfig)
+	am, err := auth.NewMiddleware(ctx, g.config.OAuthConfig)
 	if err != nil {
 		glog.Fatalf("Error creating auth middleware: %q", err)
 	}
@@ -37,7 +37,7 @@ func newGuffApp(ctx context.Context, config *core.Config) *guffApp {
 	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
 	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.config})
 	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.config})
-	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.DivisionService{})
+	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.Divisions{})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
 	g.registerRoutes()
 	return g

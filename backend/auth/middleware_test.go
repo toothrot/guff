@@ -62,9 +62,9 @@ func TestAuthMiddleware(t *testing.T) {
 		ClientID: "abc123",
 		Endpoint: oauth2.Endpoint{AuthURL: ks.URL},
 	}
-	m, err := NewAuthMiddleware(ctx, config)
+	m, err := NewMiddleware(ctx, config)
 	if err != nil {
-		t.Fatalf("NewAuthMiddleware(%v, %#v) = _, %q, want no error", ctx, config, err)
+		t.Fatalf("NewMiddleware(%v, %#v) = _, %q, want no error", ctx, config, err)
 	}
 	addr, stop := NewTestServer(t, grpc.UnaryInterceptor(m.ServerInterceptor))
 	defer stop()
