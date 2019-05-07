@@ -14,21 +14,39 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 
+	_ "google.golang.org/grpc/grpclog/glogger"
+
 	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
-	"github.com/toothrot/guff/backend/generated"
+	guff_proto "github.com/toothrot/guff/backend/generated"
 	"github.com/toothrot/guff/backend/services"
-
-	_ "google.golang.org/grpc/grpclog/glogger"
 )
 
-type guffApp struct {
-	Config *core.Config
+func newGuffApp(ctx context.Context, config *core.Config) *guffApp {
+	g := &guffApp{config: config}
+	g.router = mux.NewRouter()
+	am, err := auth.NewAuthMiddleware(ctx, g.config.OAuthConfig)
+	if err != nil {
+		glog.Fatalf("Error creating auth middleware: %q", err)
+	}
+	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
+	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
+	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.config})
+	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.config})
+	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.DivisionService{})
+	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
+	g.registerRoutes()
+	return g
+}
 
+type guffApp struct {
+	config *core.Config
+
+	context    context.Context
 	router     *mux.Router
 	server     *http.Server
 	grpcServer *grpc.Server
@@ -36,22 +54,6 @@ type guffApp struct {
 }
 
 func (g *guffApp) Serve(ctx context.Context) {
-	g.router = mux.NewRouter()
-
-	am, err := auth.NewAuthMiddleware(ctx, g.Config.OAuthConfig)
-	if err != nil {
-		glog.Fatalf("Error creating auth middleware: %q", err)
-	}
-
-	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
-	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
-	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.Config})
-	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.Config})
-	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.DivisionService{})
-	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
-
-	g.registerRoutes()
-
 	go func() {
 		glog.Infof("Listening on port %q", *port)
 		if err := g.server.ListenAndServe(); err != http.ErrServerClosed {

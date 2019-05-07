@@ -28,6 +28,10 @@ func main() {
 	flag.Parse()
 	glog.Info("Don't take any guff from these swine.")
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctx = handleSigs(ctx)
+
 	b, err := getSecret(*sessionKeyPath)
 	if err != nil {
 		glog.Fatalf("error getting secret %q: %q", *sessionKeyPath, err)
@@ -35,6 +39,9 @@ func main() {
 	store := sessions.NewCookieStore(b)
 
 	b, err = getSecret(*oauthConfigPath)
+	if err != nil {
+		glog.Fatalf("error getting secret %q: %q", *oauthConfigPath, err)
+	}
 	oc, err := google.ConfigFromJSON(b)
 	if err != nil {
 		glog.Errorf("google.ConfigFromJSON() returned error %q", err)
@@ -45,12 +52,8 @@ func main() {
 		CookieStore: store,
 		ProgramsURL: *divisionsURL,
 	}
+	g := newGuffApp(ctx, conf)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	ctx = handleSigs(ctx)
-
-	g := guffApp{Config: conf}
 	g.Serve(ctx)
 }
 

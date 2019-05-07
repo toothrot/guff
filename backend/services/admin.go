@@ -4,16 +4,13 @@ import (
 	"context"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/models"
 )
 
-var (
-	divisions   []Division
-	divisionRex = regexp.MustCompile("leagues/([0-9]+)/schedule")
-)
+var divisions []models.Division
 
 type Admin struct {
 	Config *core.Config
@@ -26,19 +23,10 @@ func (a *Admin) Scrape(ctx context.Context, req *guff_proto.ScrapeRequest) (*guf
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	matches := divisionRex.FindAllSubmatch(body, -1)
-
-	for _, match := range matches {
-		divisions = append(divisions, Division{ID: string(match[1])})
-	}
+	divisions = models.ParseDivisions(b)
 	return &guff_proto.ScrapeResponse{}, nil
-}
-
-type Division struct {
-	ID   string
-	Name string
 }
