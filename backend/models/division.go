@@ -16,3 +16,7 @@ func ParseDivisions(b []byte) []Division {
 	}
 	return divisions
 }
+
+func PersistDivisions(ds []Division) error {
+	return nil
+}

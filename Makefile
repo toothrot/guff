@@ -15,12 +15,13 @@ WEB_SOURCES := $(shell git ls-files web/)
 
 # default target
 .PHONY: all
-all: proto web-prod fmt
+all: fmt proto web-prod dist/guff
 
 .PHONY: clean
 clean:
 	rm -f $(GO_PROTO_FILES) $(JS_PROTO_FILES) $(TS_PROTO_FILES) $(JS_SERVICE_PROTO_FILES) $(TS_SERVICE_PROTO_FILES)
 	rm -rf web/dist/
+	rm -rf dist/
 
 #
 # PROTO
@@ -45,7 +46,7 @@ proto: $(ALL_PROTO_FILES)
 # TEST
 #
 .phony: test
-test: go-test
+test: proto go-test
 
 .phony: go-test
 go-test:
@@ -66,32 +67,56 @@ fmt:
 .PHONY: web-prod
 web-prod: web/dist/prod/*
 
+dist:
+	mkdir -p dist
+
+dist/guff: dist
+	cd backend; go build -o guff . && mv guff ../dist
+
+
 #
 # DEV
 #
-#.secrets/oauth2-secret-dev:
 .secrets/session-key-secret-dev:
 	openssl rand -base64 -out .secrets/session-key-secret-dev 64
 
 .secrets/oauth2-secret-dev.json:
 	cat ./doc/oauth_dev_credentials.md
 
+.secrets/postgres-password:
+	openssl rand -hex -out .secrets/postgres-password 32
+
+.secrets/postgres-guff-password:
+	openssl rand -hex -out .secrets/postgres-guff-password 32
+
 #
 # DOCKER
 #
 
+.PHONY: docker-db
+docker-db: .secrets/postgres-password
+	./init-dockerdb.sh
+
 .PHONY: docker-dev
-docker-dev: proto
+docker-dev: proto docker-db
 	docker-compose build
 
 .PHONY: docker-dev-run
 docker-dev-run: docker-dev
 	$(MAKE) docker-dev-stop
-	docker-compose up -d
+	docker-compose up -d web
 
 .PHONY: docker-dev-stop
 docker-dev-stop:
+	docker-compose stop || true
+
+.PHONY: docker-dev-down
+docker-dev-down:
 	docker-compose down || true
+
+.PHONY: docker-dev-clean
+docker-dev-clean:
+	docker-compose down --rmi local || true
 
 .PHONY: watch-docker-dev
 watch-docker-dev:

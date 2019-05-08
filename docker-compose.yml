@@ -13,9 +13,19 @@ services:
         target: oauth.json
       - source: session-key
         target: session-key
+  db:
+    image: postgres:11
+    restart: always
+    secrets:
+      - source: postgres-password
+        target: postgres-password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
 secrets:
   oauth:
     file: ./.secrets/oauth2-secret-dev.json
   session-key:
     file: ./.secrets/session-key-secret-dev
+  postgres-password:
+    file: ./.secrets/postgres-password
 

@@ -2,6 +2,7 @@
 *.iml
 *.swp
 .secrets/
+dist/
 
 # Logs
 logs
