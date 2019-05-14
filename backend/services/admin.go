@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
 	"github.com/toothrot/guff/backend/models"
@@ -22,6 +23,10 @@ type Admin struct {
 }
 
 func (a *Admin) Scrape(ctx context.Context, req *guff_proto.ScrapeRequest) (*guff_proto.ScrapeResponse, error) {
+	email := auth.EmailFromContext(ctx)
+	if email == "" {
+		return nil, grpc.Errorf(codes.PermissionDenied, codes.PermissionDenied.String())
+	}
 	resp, err := http.Get(a.Config.ProgramsURL)
 	if err != nil {
 		return nil, err

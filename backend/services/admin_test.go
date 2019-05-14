@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
 	"github.com/toothrot/guff/backend/models"
@@ -24,7 +27,8 @@ leagues/1039209/standings/
 `
 
 func TestAdmin_Scrape(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := auth.AuthContext(context.Background(), "testuser@example.com")
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	defer models.DefaultMemoryPersist.TruncateDivisions(ctx)
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +45,7 @@ func TestAdmin_Scrape(t *testing.T) {
 	}
 
 	req := &guff_proto.ScrapeRequest{}
-	if _, err := a.Scrape(context.Background(), req); err != nil {
+	if _, err := a.Scrape(ctx, req); err != nil {
 		t.Fatalf("a.Scrape(%v, %v) = _, %q", context.Background(), req, err)
 	}
 
@@ -52,5 +56,24 @@ func TestAdmin_Scrape(t *testing.T) {
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("a.Scrape(%v, %v) mismatch (-want +got):\n%s", ctx, req, diff)
+	}
+}
+
+func TestAdmin_ScrapeErrors(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	defer models.DefaultMemoryPersist.TruncateDivisions(ctx)
+	if err := models.DefaultMemoryPersist.TruncateDivisions(ctx); err != nil {
+		t.Fatalf("a.Persist.TruncateDivisions(%v) = %v, wanted no error", ctx, err)
+	}
+
+	a := &Admin{}
+	req := &guff_proto.ScrapeRequest{}
+	_, err := a.Scrape(ctx, req)
+	if err == nil {
+		t.Fatalf("a.Scrape(%v, %v) = _, %q, wanted error", context.Background(), req, err)
+	}
+	if s, ok := status.FromError(err); !ok || s.Code() != codes.PermissionDenied {
+		t.Errorf("status.FromError(%v) = %v, %v, wanted %v, %v", err, s, ok, codes.PermissionDenied.String(), true)
 	}
 }

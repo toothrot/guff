@@ -72,6 +72,20 @@ func (a *Middleware) ServerInterceptor(ctx context.Context, req interface{}, inf
 	return handler(ctx, req)
 }
 
+// FakeMiddleware is a stub middleware to inject in tests to set auth values on the context.
+type FakeMiddleware struct {
+	Email string
+}
+
+// ServerInterceptor is a GRPC Unary interceptor for faking out auth contexts.
+func (f *FakeMiddleware) ServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	return handler(context.WithValue(ctx, emailKey, f.Email), req)
+}
+
+func AuthContext(ctx context.Context, email string) context.Context {
+	return context.WithValue(ctx, emailKey, email)
+}
+
 func EmailFromContext(ctx context.Context) string {
 	email, ok := ctx.Value(emailKey).(string)
 	if !ok {
