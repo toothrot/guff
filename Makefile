@@ -94,13 +94,8 @@ secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/pos
 #
 # DOCKER
 #
-
-.PHONY: docker-db
-docker-db: .secrets/postgres-password
-	./init-dockerdb.sh
-
 .PHONY: docker-dev
-docker-dev: proto docker-db
+docker-dev: proto secrets
 	docker-compose build
 
 .PHONY: docker-dev-run
@@ -122,4 +117,4 @@ docker-dev-clean:
 
 .PHONY: watch-docker-dev
 watch-docker-dev:
-	git ls-files | entr bash -c "time $(MAKE) docker-dev-run"
+	while true; do git ls-files | entr bash -c "time $(MAKE) docker-dev-run"; done
