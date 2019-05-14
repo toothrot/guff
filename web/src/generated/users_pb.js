@@ -178,7 +178,8 @@ proto.guff.proto.GetCurrentUserResponse.prototype.toObject = function(opt_includ
 proto.guff.proto.GetCurrentUserResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     email: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    googleOauthConfig: (f = msg.getGoogleOauthConfig()) && proto.guff.proto.GoogleOAuthConfig.toObject(includeInstance, f)
+    googleOauthConfig: (f = msg.getGoogleOauthConfig()) && proto.guff.proto.GoogleOAuthConfig.toObject(includeInstance, f),
+    isAdmin: jspb.Message.getFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -224,6 +225,10 @@ proto.guff.proto.GetCurrentUserResponse.deserializeBinaryFromReader = function(m
       reader.readMessage(value,proto.guff.proto.GoogleOAuthConfig.deserializeBinaryFromReader);
       msg.setGoogleOauthConfig(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIsAdmin(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -266,6 +271,13 @@ proto.guff.proto.GetCurrentUserResponse.serializeBinaryToWriter = function(messa
       2,
       f,
       proto.guff.proto.GoogleOAuthConfig.serializeBinaryToWriter
+    );
+  }
+  f = message.getIsAdmin();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
     );
   }
 };
@@ -313,6 +325,23 @@ proto.guff.proto.GetCurrentUserResponse.prototype.clearGoogleOauthConfig = funct
  */
 proto.guff.proto.GetCurrentUserResponse.prototype.hasGoogleOauthConfig = function() {
   return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional bool is_admin = 3;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.guff.proto.GetCurrentUserResponse.prototype.getIsAdmin = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 3, false));
+};
+
+
+/** @param {boolean} value */
+proto.guff.proto.GetCurrentUserResponse.prototype.setIsAdmin = function(value) {
+  jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 

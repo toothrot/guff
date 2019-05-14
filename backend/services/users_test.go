@@ -10,6 +10,7 @@ import (
 	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
 	guff_proto "github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/models"
 )
 
 func TestUsers_GetCurrentUser(t *testing.T) {
@@ -19,9 +20,10 @@ func TestUsers_GetCurrentUser(t *testing.T) {
 		},
 	}
 	tests := []struct {
-		name string
-		user string
-		want *guff_proto.GetCurrentUserResponse
+		name  string
+		email string
+		user  models.User
+		want  *guff_proto.GetCurrentUserResponse
 	}{
 		{
 			name: "unauthenticated",
@@ -30,17 +32,19 @@ func TestUsers_GetCurrentUser(t *testing.T) {
 			},
 		},
 		{
-			name: "authenticated",
-			user: "testuser@example.com",
+			name:  "authenticated",
+			email: "testuser@example.com",
+			user:  models.User{Email: "testuser@example.com", IsAdmin: true},
 			want: &guff_proto.GetCurrentUserResponse{
 				Email:             "testuser@example.com",
+				IsAdmin:           true,
 				GoogleOauthConfig: &guff_proto.GoogleOAuthConfig{ClientId: "123", LoginURL: "?client_id=123&response_type=code"},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(auth.AuthContext(context.Background(), tt.user))
+			ctx, cancel := context.WithCancel(auth.AuthContext(context.Background(), tt.email, tt.user))
 			defer cancel()
 			req := &guff_proto.GetCurrentUserRequest{}
 

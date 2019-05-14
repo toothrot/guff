@@ -6,6 +6,8 @@ import {HttpClient} from '@angular/common/http';
 import {map, shareReplay, take} from 'rxjs/operators';
 import {GetDivisionsRequest, GetDivisionsResponse} from '../generated/divisions_pb';
 import {DivisionsServiceClient} from '../generated/DivisionsServiceClientPb';
+import {ScrapeRequest, ScrapeResponse} from '../generated/admin_pb';
+import {AdminServiceClient} from '../generated/AdminServiceClientPb';
 
 @Injectable({
   providedIn: 'root',
@@ -13,16 +15,22 @@ import {DivisionsServiceClient} from '../generated/DivisionsServiceClientPb';
 export class AppService {
   client: UsersServiceClient;
   divisionsClient: DivisionsServiceClient;
+  adminClient: AdminServiceClient;
 
   constructor(private httpClient: HttpClient) {
     this.client = new UsersServiceClient('http://localhost:8080', {}, {});
     this.divisionsClient = new DivisionsServiceClient('http://localhost:8080', {}, {});
+    this.adminClient = new AdminServiceClient('http://localhost:8080', {}, {});
+  }
+
+  private static authHeader() {
+    return {Authorization: 'Bearer ' + localStorage.getItem('token')};
   }
 
   getCurrentUser(): Observable<GetCurrentUserResponse> {
     const request = new GetCurrentUserRequest();
     return bindNodeCallback<GetCurrentUserResponse>(
-      this.client.getCurrentUser.bind(this.client, request, {Authorization: 'Bearer ' + localStorage.getItem('token')}),
+      this.client.getCurrentUser.bind(this.client, request, AppService.authHeader()),
     )();
   }
 
@@ -30,6 +38,13 @@ export class AppService {
     const request = new GetDivisionsRequest();
     return bindNodeCallback<GetDivisionsResponse>(
       this.divisionsClient.getDivisions.bind(this.divisionsClient, request, {}),
+    )();
+  }
+
+  scrapeDivisions(): Observable<ScrapeResponse> {
+    const request = new ScrapeRequest();
+    return bindNodeCallback<ScrapeResponse>(
+      this.adminClient.scrape.bind(this.adminClient, request, AppService.authHeader()),
     )();
   }
 

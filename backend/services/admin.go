@@ -23,8 +23,8 @@ type Admin struct {
 }
 
 func (a *Admin) Scrape(ctx context.Context, req *guff_proto.ScrapeRequest) (*guff_proto.ScrapeResponse, error) {
-	email := auth.EmailFromContext(ctx)
-	if email == "" {
+	user := auth.UserFromContext(ctx)
+	if !user.GetIsAdmin() {
 		return nil, grpc.Errorf(codes.PermissionDenied, codes.PermissionDenied.String())
 	}
 	resp, err := http.Get(a.Config.ProgramsURL)

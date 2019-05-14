@@ -23,6 +23,9 @@ export class GetCurrentUserResponse extends jspb.Message {
   hasGoogleOauthConfig(): boolean;
   clearGoogleOauthConfig(): void;
 
+  getIsAdmin(): boolean;
+  setIsAdmin(value: boolean): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetCurrentUserResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetCurrentUserResponse): GetCurrentUserResponse.AsObject;
@@ -35,6 +38,7 @@ export namespace GetCurrentUserResponse {
   export type AsObject = {
     email: string,
     googleOauthConfig?: GoogleOAuthConfig.AsObject,
+    isAdmin: boolean,
   }
 }
 

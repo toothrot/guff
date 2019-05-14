@@ -27,7 +27,8 @@ leagues/1039209/standings/
 `
 
 func TestAdmin_Scrape(t *testing.T) {
-	ctx := auth.AuthContext(context.Background(), "testuser@example.com")
+	u := models.User{Email: "testuser@example.com", IsAdmin: true}
+	ctx := auth.AuthContext(context.Background(), u.Email, u)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	defer models.DefaultMemoryPersist.TruncateDivisions(ctx)
@@ -67,13 +68,34 @@ func TestAdmin_ScrapeErrors(t *testing.T) {
 		t.Fatalf("a.Persist.TruncateDivisions(%v) = %v, wanted no error", ctx, err)
 	}
 
-	a := &Admin{}
-	req := &guff_proto.ScrapeRequest{}
-	_, err := a.Scrape(ctx, req)
-	if err == nil {
-		t.Fatalf("a.Scrape(%v, %v) = _, %q, wanted error", context.Background(), req, err)
+	tests := []struct{
+		desc string
+		user models.User
+		wantCode codes.Code
+	}{
+		{
+			desc: "unauthenticated",
+			wantCode: codes.PermissionDenied,
+		},
+		{
+			desc: "authenticated as non-admin",
+			user: models.User{Email: "rando@example.com", IsAdmin: false},
+			wantCode: codes.PermissionDenied,
+		},
 	}
-	if s, ok := status.FromError(err); !ok || s.Code() != codes.PermissionDenied {
-		t.Errorf("status.FromError(%v) = %v, %v, wanted %v, %v", err, s, ok, codes.PermissionDenied.String(), true)
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			ctx = auth.AuthContext(ctx, tt.user.Email, tt.user)
+			a := &Admin{}
+			req := &guff_proto.ScrapeRequest{}
+			_, err := a.Scrape(ctx, req)
+			if err == nil {
+				t.Fatalf("a.Scrape(%v, %v) = _, %q, wanted error", context.Background(), req, err)
+			}
+			if s, ok := status.FromError(err); !ok || s.Code() != tt.wantCode {
+				t.Errorf("status.FromError(%v) = %v, %v, wanted %v, %v", err, s, ok, tt.wantCode.String(), true)
+			}
+		})
+
 	}
 }

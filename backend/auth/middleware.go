@@ -95,8 +95,10 @@ func (f *FakeMiddleware) ServerInterceptor(ctx context.Context, req interface{},
 	return handler(context.WithValue(ctx, emailKey, f.Email), req)
 }
 
-func AuthContext(ctx context.Context, email string) context.Context {
-	return context.WithValue(ctx, emailKey, email)
+func AuthContext(ctx context.Context, email string, user models.User) context.Context {
+	ctx = context.WithValue(ctx, emailKey, email)
+	ctx = context.WithValue(ctx, userKey, &user)
+	return ctx
 }
 
 func EmailFromContext(ctx context.Context) string {

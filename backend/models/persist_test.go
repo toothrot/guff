@@ -168,24 +168,24 @@ func TestDBPersist_FindOrCreateUser(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "empty email",
-			email: " ",
+			name:    "empty email",
+			email:   " ",
 			wantErr: true,
 		},
 		{
-			name: "first user, does not exist",
+			name:  "first user, does not exist",
 			email: "testuser1@example.com",
-			want: User{Email: "testuser1@example.com", IsAdmin: true},
+			want:  User{Email: "testuser1@example.com", IsAdmin: true},
 		},
 		{
-			name: "first user, created by previous test",
+			name:  "first user, created by previous test",
 			email: "testuser1@example.com",
-			want: User{Email: "testuser1@example.com", IsAdmin: true},
+			want:  User{Email: "testuser1@example.com", IsAdmin: true},
 		},
 		{
-			name: "second user, does not get admin",
+			name:  "second user, does not get admin",
 			email: "testuser2@example.com",
-			want: User{Email: "testuser2@example.com"},
+			want:  User{Email: "testuser2@example.com"},
 		},
 	}
 	for _, tt := range tests {

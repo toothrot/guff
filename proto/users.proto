@@ -12,6 +12,8 @@ message GetCurrentUserResponse {
   string email = 1;
 
   GoogleOAuthConfig google_oauth_config = 2;
+
+  bool is_admin = 3;
 }
 
 message GoogleOAuthConfig {

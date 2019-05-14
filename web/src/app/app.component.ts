@@ -3,7 +3,7 @@ import {AppService} from './app.service';
 import {from, Observable} from 'rxjs';
 import {GetCurrentUserResponse} from 'src/generated/users_pb';
 import {ActivatedRoute, Router} from '@angular/router';
-import {first, map, mergeMap, shareReplay, tap} from 'rxjs/operators';
+import {concatMap, map, mergeMap, shareReplay, tap} from 'rxjs/operators';
 import {OAuthService} from './oauth/oauth.service';
 import {filter} from 'rxjs/internal/operators/filter';
 import {GetDivisionsResponse} from '../generated/divisions_pb';
@@ -39,6 +39,14 @@ export class AppComponent implements OnInit {
       // map(user => user.getEmail()),
       // catchError(err => of(err.toString())),
       tap(() => from(this.router.navigateByUrl('/'))),
+    );
+  }
+
+  scrape() {
+    this.divisions = this.appService.scrapeDivisions().pipe(
+      concatMap(() => {
+        return this.appService.getDivisions().pipe(shareReplay(1));
+      })
     );
   }
 }
