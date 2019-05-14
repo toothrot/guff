@@ -26,5 +26,11 @@ docker-compose up -d db;
 waitForDb;
 
 CREATE="DO \$do\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname='guff') THEN CREATE ROLE guff CREATEDB INHERIT LOGIN PASSWORD '`cat "$POSTGRES_GUFF_PASSWORD"`'; END IF; END; \$do\$;"
+UPDATE="ALTER ROLE guff CREATEDB INHERIT LOGIN PASSWORD '`cat "$POSTGRES_GUFF_PASSWORD"`';"
 
 docker-compose exec db psql postgres postgres -c "$CREATE"
+docker-compose exec db psql postgres postgres -c "$UPDATE"
+
+docker-compose exec db createdb -U guff guff || true
+docker-compose exec db createdb -U guff guff_dev || true
+docker-compose exec db createdb -U guff guff_test || true

@@ -5,15 +5,18 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/golang/glog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
 	"github.com/toothrot/guff/backend/models"
 )
 
-var divisions []models.Division
-
 type Admin struct {
-	Config *core.Config
+	Config  *core.Config
+	Persist models.Persist
 
 	guff_proto.UnimplementedAdminServiceServer
 }
@@ -27,6 +30,10 @@ func (a *Admin) Scrape(ctx context.Context, req *guff_proto.ScrapeRequest) (*guf
 	if err != nil {
 		return nil, err
 	}
-	divisions = models.ParseDivisions(b)
+	ds := models.ParseDivisions(b)
+	if err := a.Persist.UpsertDivisions(ctx, ds); err != nil {
+		glog.Errorf("a.Persist.UpsertDivisions(%v, %v) = %q", ctx, ds, err)
+		return nil, grpc.Errorf(codes.Internal, codes.Internal.String())
+	}
 	return &guff_proto.ScrapeResponse{}, nil
 }

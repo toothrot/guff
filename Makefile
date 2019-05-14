@@ -73,10 +73,12 @@ dist:
 dist/guff: dist
 	cd backend; go build -o guff . && mv guff ../dist
 
-
 #
 # DEV
 #
+.PHONY: secrets
+secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/postgres-guff-password .secrets/session-key-secret-dev
+
 .secrets/session-key-secret-dev:
 	openssl rand -base64 -out .secrets/session-key-secret-dev 64
 
@@ -108,7 +110,7 @@ docker-dev-run: docker-dev
 
 .PHONY: docker-dev-stop
 docker-dev-stop:
-	docker-compose stop || true
+	docker-compose stop web || true
 
 .PHONY: docker-dev-down
 docker-dev-down:

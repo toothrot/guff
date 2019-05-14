@@ -6,8 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/toothrot/guff/backend/core"
 	"github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/models"
 )
 
 const programsList = `
@@ -21,28 +24,33 @@ leagues/1039209/standings/
 `
 
 func TestAdmin_Scrape(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	defer models.DefaultMemoryPersist.TruncateDivisions(ctx)
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(programsList)); err != nil {
 			t.Fatalf("w.Write() = %q, wanted no error", err)
 		}
 	}))
+	if err := models.DefaultMemoryPersist.TruncateDivisions(ctx); err != nil {
+		t.Fatalf("a.Persist.TruncateDivisions(%v) = %v, wanted no error", ctx, err)
+	}
 	a := &Admin{
-		Config: &core.Config{ProgramsURL: s.URL},
+		Config:  &core.Config{ProgramsURL: s.URL},
+		Persist: models.DefaultMemoryPersist,
 	}
 
-	if _, err := a.Scrape(context.Background(), &guff_proto.ScrapeRequest{}); err != nil {
-		t.Fatalf("a.Scrape(%v, %v) = _, %q", context.Background(), &guff_proto.ScrapeRequest{}, err)
+	req := &guff_proto.ScrapeRequest{}
+	if _, err := a.Scrape(context.Background(), req); err != nil {
+		t.Fatalf("a.Scrape(%v, %v) = _, %q", context.Background(), req, err)
 	}
 
-	if len(divisions) != 2 {
-		t.Fatalf("len(%v) = %d, wanted %d", divisions, len(divisions), 2)
+	want := []models.Division{{ID: "1039207"}, {ID: "1039210"}}
+	got, err := models.DefaultMemoryPersist.GetDivisions(ctx)
+	if err != nil {
+		t.Fatalf("models.DefaultMemoryPersist.GetDivisions(%v) = _, %v, wanted no error", ctx, err)
 	}
-
-	if divisions[0].ID != "1039207" {
-		t.Errorf("divisions[%d].ID = %q, wanted %q", 0, divisions[0].ID, "1039207")
-	}
-
-	if divisions[1].ID != "1039210" {
-		t.Errorf("divisions[%d].ID = %q, wanted %q", 1, divisions[1].ID, "1039210")
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("a.Scrape(%v, %v) mismatch (-want +got):\n%s", ctx, req, diff)
 	}
 }

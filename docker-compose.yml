@@ -8,17 +8,30 @@ services:
     image: guff-dev:1
     ports:
       - "8080:8080"
+    links:
+      - db
     secrets:
       - source: oauth
         target: oauth.json
       - source: session-key
         target: session-key
+      - source: postgres-guff-password
+        target: postgres-guff-password
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: guff
+      PGSSLMODE: disable
   db:
     image: postgres:11
     restart: always
     secrets:
       - source: postgres-password
         target: postgres-password
+    expose:
+      - 5432
+    ports:
+      - "55432:5432"
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
 secrets:
@@ -28,4 +41,6 @@ secrets:
     file: ./.secrets/session-key-secret-dev
   postgres-password:
     file: ./.secrets/postgres-password
+  postgres-guff-password:
+    file: ./.secrets/postgres-guff-password
 

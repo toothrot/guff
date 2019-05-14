@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"log"
 	"mime"
 	"net"
@@ -23,6 +25,7 @@ import (
 	"github.com/toothrot/guff/backend/auth"
 	"github.com/toothrot/guff/backend/core"
 	guff_proto "github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/models"
 	"github.com/toothrot/guff/backend/services"
 )
 
@@ -35,12 +38,24 @@ func newGuffApp(ctx context.Context, config *core.Config) *guffApp {
 	}
 	g.server = &http.Server{Addr: net.JoinHostPort("", *port), Handler: handlers.CompressHandler(g.router)}
 	g.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(am.ServerInterceptor)))
+	p := &models.DBPersist{DB: setupDB(config)}
 	guff_proto.RegisterUsersServiceServer(g.grpcServer, &services.Users{Config: g.config})
-	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.config})
-	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.Divisions{})
+	guff_proto.RegisterAdminServiceServer(g.grpcServer, &services.Admin{Config: g.config, Persist: p})
+	guff_proto.RegisterDivisionsServiceServer(g.grpcServer, &services.Divisions{Persist: p})
 	g.grpcWeb = grpcweb.WrapServer(g.grpcServer)
 	g.registerRoutes()
 	return g
+}
+
+func setupDB(config *core.Config) *sql.DB {
+	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s password=%s", config.DBName, config.DBPassword))
+	if err != nil {
+		glog.Fatalf("sql.Open(%q, %q) = _, %v, wanted no error", "postgres", fmt.Sprintf("dbname=%q", config.DBName), err)
+	}
+	if err := models.Migrate(db); err != nil {
+		glog.Fatalf("Migrate(%v) = %v, wanted no error", db, err)
+	}
+	return db
 }
 
 type guffApp struct {

@@ -20,7 +20,9 @@ var (
 	port            = flag.String("port", "8080", "Port to listen for HTTP requests.")
 	sessionKeyPath  = flag.String("session_key", "/run/secrets/session-key", "Session key secret file path")
 	oauthConfigPath = flag.String("oauth_config", "/run/secrets/oauth.json", "OAuth config JSON file path (see http://golang.org/x/oauth2/google#ConfigFromJSON)")
+	dbPassPath      = flag.String("db_pass_path", "/run/secrets/postgres-guff-password", "Database password secret file path")
 	divisionsURL    = flag.String("divisions_url", "https://royalpalmsshuffle.leagueapps.com/leagues?state=LIVE&locationId=&seasonId=&days=&levelId=", "URL of Divisions page")
+	dbname          = flag.String("dbname", "guff_dev", "Postgres database name")
 )
 
 func main() {
@@ -46,11 +48,17 @@ func main() {
 	if err != nil {
 		glog.Errorf("google.ConfigFromJSON() returned error %q", err)
 	}
+	dbpass, err := getSecret(*dbPassPath)
+	if err != nil {
+		glog.Fatalf("error getting secret %q: %q", *oauthConfigPath, err)
+	}
 	oc.Scopes = []string{"email", "profile"}
 	conf := &core.Config{
 		OAuthConfig: oc,
 		CookieStore: store,
 		ProgramsURL: *divisionsURL,
+		DBName:      *dbname,
+		DBPassword:  string(dbpass),
 	}
 	g := newGuffApp(ctx, conf)
 

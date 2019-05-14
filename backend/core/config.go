@@ -11,4 +11,6 @@ type Config struct {
 
 	// URL to scrape for list of Programs (divisions in a league)
 	ProgramsURL string
+	DBName      string
+	DBPassword  string
 }
