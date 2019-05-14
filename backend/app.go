@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -48,7 +49,11 @@ func newGuffApp(ctx context.Context, config *core.Config) *guffApp {
 }
 
 func setupDB(config *core.Config) *sql.DB {
-	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s password=%s", config.DBName, config.DBPassword))
+	connstring := fmt.Sprintf("dbname=%s password=%s", config.DBName, config.DBPassword)
+	if config.DBURL != "" {
+		connstring = strings.TrimSpace(config.DBURL)
+	}
+	db, err := sql.Open("postgres", connstring)
 	if err != nil {
 		glog.Fatalf("sql.Open(%q, %q) = _, %v, wanted no error", "postgres", fmt.Sprintf("dbname=%q", config.DBName), err)
 	}

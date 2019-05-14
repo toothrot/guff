@@ -13,4 +13,5 @@ type Config struct {
 	ProgramsURL string
 	DBName      string
 	DBPassword  string
+	DBURL       string
 }

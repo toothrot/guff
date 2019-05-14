@@ -68,18 +68,18 @@ func TestAdmin_ScrapeErrors(t *testing.T) {
 		t.Fatalf("a.Persist.TruncateDivisions(%v) = %v, wanted no error", ctx, err)
 	}
 
-	tests := []struct{
-		desc string
-		user models.User
+	tests := []struct {
+		desc     string
+		user     models.User
 		wantCode codes.Code
 	}{
 		{
-			desc: "unauthenticated",
+			desc:     "unauthenticated",
 			wantCode: codes.PermissionDenied,
 		},
 		{
-			desc: "authenticated as non-admin",
-			user: models.User{Email: "rando@example.com", IsAdmin: false},
+			desc:     "authenticated as non-admin",
+			user:     models.User{Email: "rando@example.com", IsAdmin: false},
 			wantCode: codes.PermissionDenied,
 		},
 	}
