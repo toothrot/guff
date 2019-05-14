@@ -15,6 +15,7 @@ import (
 
 	"github.com/toothrot/guff/backend/auth/test"
 	"github.com/toothrot/guff/backend/generated"
+	"github.com/toothrot/guff/backend/models"
 )
 
 type fakeService struct {
@@ -23,7 +24,7 @@ type fakeService struct {
 
 func (f *fakeService) TestEcho(ctx context.Context, req *guff_proto.TestEchoRequest) (*guff_proto.TestEchoResponse, error) {
 	return &guff_proto.TestEchoResponse{
-		Message: strings.TrimSpace(fmt.Sprintf("hiya %s", EmailFromContext(ctx))),
+		Message: strings.TrimSpace(fmt.Sprintf("hiya %s %t", EmailFromContext(ctx), UserFromContext(ctx).GetIsAdmin())),
 	}, nil
 }
 
@@ -53,16 +54,18 @@ func NewTestClient(ctx context.Context, t *testing.T, addr string) guff_proto.Te
 func TestAuthMiddleware(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	ks, ksCleanup := test.NewKeyServer(t)
 	defer ksCleanup()
+	if err := models.DefaultMemoryPersist.TruncateUsers(ctx); err != nil {
+		t.Fatalf("models.DefaultMemoryPersist.TruncateUsers(%v) = %v, wanted no error", ctx, err)
+	}
 
 	// Arrange: Configure middleware
 	config := &oauth2.Config{
 		ClientID: "abc123",
 		Endpoint: oauth2.Endpoint{AuthURL: ks.URL},
 	}
-	m, err := NewMiddleware(ctx, config)
+	m, err := NewMiddleware(ctx, config, models.DefaultMemoryPersist)
 	if err != nil {
 		t.Fatalf("NewMiddleware(%v, %#v) = _, %q, want no error", ctx, config, err)
 	}
@@ -70,6 +73,10 @@ func TestAuthMiddleware(t *testing.T) {
 	defer stop()
 
 	tok, _ := test.NewToken(config, oidc.UserInfo{Email: "mario@example.com"})
+	adminTok, _ := test.NewToken(config, oidc.UserInfo{Email: "admin@example.com"})
+	if _, err := models.DefaultMemoryPersist.FindOrCreateUser(ctx, "admin@example.com"); err != nil {
+		t.Fatalf("models.DefaultMemoryPersist.FindOrCreateUser(%v, %v) = _, %v, wanted no error", ctx, "admin@example.com", err)
+	}
 
 	cases := []struct {
 		desc string
@@ -79,43 +86,50 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			desc: "empty metadata",
 			md:   metadata.MD{},
-			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+			want: &guff_proto.TestEchoResponse{Message: "hiya  false"},
 		},
 		{
 			desc: "empty authorization value",
 			md:   metadata.Pairs("authorization", ""),
-			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+			want: &guff_proto.TestEchoResponse{Message: "hiya  false"},
 		},
 		{
 			desc: "malformated authorization value",
 			md:   metadata.Pairs("authorization", "barf"),
-			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+			want: &guff_proto.TestEchoResponse{Message: "hiya  false"},
 		},
 		{
 			desc: "invalid token",
 			md:   metadata.Pairs("authorization", "Bearer garbage"),
-			want: &guff_proto.TestEchoResponse{Message: "hiya"},
+			want: &guff_proto.TestEchoResponse{Message: "hiya  false"},
 		},
 		{
 			desc: "valid token",
 			md:   metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tok)),
-			want: &guff_proto.TestEchoResponse{Message: "hiya mario@example.com"},
+			want: &guff_proto.TestEchoResponse{Message: "hiya mario@example.com false"},
+		},
+		{
+			desc: "valid admin token",
+			md:   metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", adminTok)),
+			want: &guff_proto.TestEchoResponse{Message: "hiya admin@example.com true"},
 		},
 	}
 	for _, c := range cases {
-		// Act: Do request
-		client := NewTestClient(ctx, t, addr)
-		ctx = metadata.NewOutgoingContext(ctx, c.md)
-		req := &guff_proto.TestEchoRequest{Message: "hiya"}
-		resp, err := client.TestEcho(ctx, req)
-		if err != nil {
-			t.Errorf("%q: client.TestEcho(%v, %#v) = _, %q, want no error", c.desc, ctx, req, err)
-		}
+		t.Run(c.desc, func(t *testing.T) {
+			// Act: Do request
+			client := NewTestClient(ctx, t, addr)
+			ctx = metadata.NewOutgoingContext(ctx, c.md)
+			req := &guff_proto.TestEchoRequest{Message: "hiya"}
+			resp, err := client.TestEcho(ctx, req)
+			if err != nil {
+				t.Errorf("client.TestEcho(%v, %#v) = _, %q, want no error", ctx, req, err)
+			}
 
-		// Assert: response
-		if diff := cmp.Diff(c.want, resp); diff != "" {
-			t.Errorf("client.TestEcho(%v, %#v) mismatch (-want +got):\n%s", ctx, req, diff)
-		}
+			// Assert: response
+			if diff := cmp.Diff(c.want, resp); diff != "" {
+				t.Errorf("client.TestEcho(%v, %#v) mismatch (-want +got):\n%s", ctx, req, diff)
+			}
+		})
 	}
 
 }

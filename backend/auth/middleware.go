@@ -10,25 +10,31 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/toothrot/guff/backend/models"
 )
 
 type authContextKey int
 
-const emailKey authContextKey = iota
+const (
+	emailKey authContextKey = iota
+	userKey  authContextKey = iota
+)
 
-func NewMiddleware(ctx context.Context, c *oauth2.Config) (*Middleware, error) {
+func NewMiddleware(ctx context.Context, c *oauth2.Config, p models.Persist) (*Middleware, error) {
 	issuer, err := url.Parse(c.Endpoint.AuthURL)
 	if err != nil {
 		return nil, err
 	}
 	issuer.Path = ""
-	p, err := oidc.NewProvider(ctx, issuer.String())
+	provider, err := oidc.NewProvider(ctx, issuer.String())
 	if err != nil {
 		return nil, err
 	}
-	v := p.Verifier(&oidc.Config{ClientID: c.ClientID})
+	v := provider.Verifier(&oidc.Config{ClientID: c.ClientID})
 	return &Middleware{
 		verifier: v,
+		Persist:  p,
 	}, nil
 }
 
@@ -39,6 +45,7 @@ type IDTokenVerifier interface {
 // Middleware implements middleware for validating tokens.
 type Middleware struct {
 	verifier IDTokenVerifier
+	Persist  models.Persist
 }
 
 // ServerInterceptor is a GRPC Unary interceptor for validating Authorization headers.
@@ -67,7 +74,13 @@ func (a *Middleware) ServerInterceptor(ctx context.Context, req interface{}, inf
 	if err := token.Claims(&userInfo); err != nil {
 		return handler(ctx, req)
 	}
-	ctx = context.WithValue(ctx, emailKey, userInfo.Email)
+	u, err := a.Persist.FindOrCreateUser(ctx, strings.ToLower(userInfo.Email))
+	if err != nil {
+		glog.Errorf("FindOrCreateUser() = %v", err)
+		return handler(ctx, req)
+	}
+	ctx = context.WithValue(ctx, emailKey, u.Email)
+	ctx = context.WithValue(ctx, userKey, &u)
 
 	return handler(ctx, req)
 }
@@ -92,4 +105,12 @@ func EmailFromContext(ctx context.Context) string {
 		return ""
 	}
 	return email
+}
+
+func UserFromContext(ctx context.Context) *models.User {
+	u, ok := ctx.Value(userKey).(*models.User)
+	if !ok {
+		return nil
+	}
+	return u
 }

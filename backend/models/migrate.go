@@ -16,8 +16,14 @@ var migrations = mapfs.New(map[string]string{
 			id SERIAL,
             extid TEXT UNIQUE,
 			name TEXT
-		);`,
+	);`,
 	"1_guff.down.sql": "DROP TABLE divisions",
+	"2_users.up.sql": `CREATE TABLE users (
+    	id SERIAL,
+    	email TEXT UNIQUE,
+    	is_admin BOOLEAN
+	);`,
+	"2_users.down.sql": `DROP TABLE users;`,
 })
 
 func Migrate(db *sql.DB) error {

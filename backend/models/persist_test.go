@@ -18,7 +18,7 @@ func truncateTables(ctx context.Context, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if _, err := tx.ExecContext(ctx, "TRUNCATE TABLE divisions;"); err != nil {
+	if _, err := tx.ExecContext(ctx, "TRUNCATE TABLE divisions; TRUNCATE TABLE users;"); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
@@ -146,5 +146,58 @@ func TestDBPersist_GetDivisions(t *testing.T) {
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("PersistDivisions() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestDBPersist_FindOrCreateUser(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	db, cleanup := initTestDb(ctx, t)
+	defer cleanup()
+	d := &DBPersist{
+		DB: db,
+	}
+
+	tests := []struct {
+		name    string
+		email   string
+		want    User
+		wantErr bool
+	}{
+		{
+			name: "empty email",
+			email: " ",
+			wantErr: true,
+		},
+		{
+			name: "first user, does not exist",
+			email: "testuser1@example.com",
+			want: User{Email: "testuser1@example.com", IsAdmin: true},
+		},
+		{
+			name: "first user, created by previous test",
+			email: "testuser1@example.com",
+			want: User{Email: "testuser1@example.com", IsAdmin: true},
+		},
+		{
+			name: "second user, does not get admin",
+			email: "testuser2@example.com",
+			want: User{Email: "testuser2@example.com"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := d.FindOrCreateUser(ctx, tt.email)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DBPersist.FindOrCreateUser(_, %v) error = %v, wantErr %v", tt.email, err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("FindOrCreateUser(_, %v) mismatch (-want +got):\n%s", tt.email, diff)
+			}
+		})
 	}
 }
