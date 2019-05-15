@@ -18,9 +18,9 @@ export class AppService {
   adminClient: AdminServiceClient;
 
   constructor(private httpClient: HttpClient) {
-    this.client = new UsersServiceClient('http://localhost:8080', {}, {});
-    this.divisionsClient = new DivisionsServiceClient('http://localhost:8080', {}, {});
-    this.adminClient = new AdminServiceClient('http://localhost:8080', {}, {});
+    this.client = new UsersServiceClient('', {}, {});
+    this.divisionsClient = new DivisionsServiceClient('', {}, {});
+    this.adminClient = new AdminServiceClient('', {}, {});
   }
 
   private static authHeader() {
@@ -54,7 +54,7 @@ export class AppService {
       map((resp => {
         const url = new URL(resp.getGoogleOauthConfig().getLoginurl());
         url.searchParams.set('response_type', 'id_token');
-        url.searchParams.set('redirect_uri', 'http://localhost:8080');
+        url.searchParams.set('redirect_uri', window.location.origin);
         return url.toString();
       })),
       shareReplay(),

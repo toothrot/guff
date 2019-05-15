@@ -32,7 +32,6 @@ export class AppComponent implements OnInit {
       // on failure, redirect and flash error.
       map(params => params.get('id_token') || localStorage.getItem('token')),
       filter(token => {
-        console.log(token);
         return !!token;
       }),
       mergeMap(token => this.oauthService.verifyAndSave(token)),

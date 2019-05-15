@@ -13,7 +13,7 @@ export class OAuthService {
   client: UsersServiceClient;
 
   constructor(private httpClient: HttpClient) {
-    this.client = new UsersServiceClient('http://localhost:8080', {}, {});
+    this.client = new UsersServiceClient('', {}, {});
   }
 
   getCurrentUser(idToken = ''): Observable<GetCurrentUserResponse> {
