@@ -94,6 +94,15 @@ secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/pos
 #
 # DOCKER
 #
+.PHONY: docker
+docker:
+	docker build --build-arg configuration=production -t guff:1 .
+
+.PHONY: docker-push
+docker-push: docker
+	docker tag guff:1 gcr.io/shuffleboardclub/guff:1
+	docker push gcr.io/shuffleboardclub/guff:1
+
 .PHONY: docker-dev
 docker-dev: proto secrets
 	docker-compose build

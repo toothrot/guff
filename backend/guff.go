@@ -46,6 +46,11 @@ func main() {
 	defer cancel()
 	ctx = handleSigs(ctx)
 
+	if lis := os.Getenv("PORT"); lis != "" {
+		*port = lis
+		glog.Infof("Will listen on %q", *port)
+	}
+
 	kc, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
 		glog.Fatalf("kms.NewKeyManagementClient() = %v", err)
