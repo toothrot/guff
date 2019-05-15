@@ -86,6 +86,12 @@ func TestDBPersist_UpsertDivisions(t *testing.T) {
 			current: []Division{{ID: "123", Name: "Barf"}},
 			input:   []Division{},
 		},
+		{
+			desc:    "updating name",
+			want:    []Division{{ID: "123", Name: "Beautiful People"}},
+			current: []Division{{ID: "123", Name: "Barf"}},
+			input:   []Division{{ID: "123", Name: "Beautiful People"}},
+		},
 	}
 	for _, c := range cases {
 		if err := truncateTables(ctx, db); err != nil {

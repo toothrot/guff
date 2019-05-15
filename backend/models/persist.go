@@ -114,7 +114,7 @@ func (d *DBPersist) UpsertDivisions(ctx context.Context, ds []Division) error {
 	if err != nil {
 		return err
 	}
-	s, err := tx.PrepareContext(ctx, "INSERT INTO divisions(extid, name) VALUES ($1, $2) ON CONFLICT(extid) DO NOTHING")
+	s, err := tx.PrepareContext(ctx, "INSERT INTO divisions(extid, name) VALUES ($1, $2) ON CONFLICT(extid) DO UPDATE SET name = $2")
 	if err != nil {
 		return err
 	}
