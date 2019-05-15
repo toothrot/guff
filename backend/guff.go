@@ -35,6 +35,8 @@ var (
 	sessionKeyEnc  = os.Getenv("GUFF_SESSION_KEY_ENC")
 	oauthConfigEnc = os.Getenv("GUFF_OAUTH_CONFIG_ENC")
 	dbURLEnc       = os.Getenv("GUFF_DB_URL_ENC")
+
+	requireHTTPS = os.Getenv("GUFF_REQUIRE_HTTPS")
 )
 
 func main() {
@@ -69,12 +71,13 @@ func main() {
 	}
 	oc.Scopes = []string{"email", "profile"}
 	conf := &core.Config{
-		OAuthConfig: oc,
-		CookieStore: store,
-		ProgramsURL: *divisionsURL,
-		DBName:      *dbname,
-		DBPassword:  string(dbpass),
-		DBURL:       string(getKMSSecret(ctx, kc, dbURLEnc)),
+		OAuthConfig:  oc,
+		CookieStore:  store,
+		ProgramsURL:  *divisionsURL,
+		DBName:       *dbname,
+		DBPassword:   string(dbpass),
+		DBURL:        string(getKMSSecret(ctx, kc, dbURLEnc)),
+		RequireHTTPS: requireHTTPS,
 	}
 	g := newGuffApp(ctx, conf)
 
@@ -104,7 +107,7 @@ func oauthConfig(ctx context.Context, kc *kms.KeyManagementClient) []byte {
 }
 
 func getKMSSecret(ctx context.Context, kc *kms.KeyManagementClient, cipherText string) []byte {
-	if kmsKey == ""{
+	if kmsKey == "" {
 		glog.Infof("GUFF_KMS_KEY not set, skipping")
 		return []byte{}
 	}

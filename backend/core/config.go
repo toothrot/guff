@@ -10,8 +10,9 @@ type Config struct {
 	CookieStore *sessions.CookieStore
 
 	// URL to scrape for list of Programs (divisions in a league)
-	ProgramsURL string
-	DBName      string
-	DBPassword  string
-	DBURL       string
+	ProgramsURL  string
+	DBName       string
+	DBPassword   string
+	DBURL        string
+	RequireHTTPS string
 }

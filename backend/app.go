@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -93,6 +94,9 @@ func (g *guffApp) Serve(ctx context.Context) {
 func (g *guffApp) registerRoutes() {
 	g.router.PathPrefix("/guff.proto").Handler(g.grpcWeb)
 	g.router.PathPrefix("/").Handler(&fileServer{*webRoot})
+	if g.config.RequireHTTPS != "" {
+		g.router.Use(httpsMiddleware)
+	}
 }
 
 type fileServer struct {
@@ -100,6 +104,7 @@ type fileServer struct {
 }
 
 func (f *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	glog.Infof("h: %#v", r.Header)
 	abs, err := filepath.Abs(f.webRoot)
 	if err != nil {
 		log.Fatalf("Error parsing absolute path from %q", *webRoot)
@@ -118,4 +123,22 @@ func (f *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fs := http.FileServer(http.Dir(abs))
 	fs.ServeHTTP(w, r)
+}
+
+var xForwardedProto = http.CanonicalHeaderKey("X-Forwarded-Proto")
+
+func httpsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.ToLower(r.Header.Get(xForwardedProto)) != "https" {
+			u := &url.URL{
+				Scheme:   "https",
+				Host:     r.Host,
+				Path:     r.URL.Path,
+				RawQuery: r.URL.RawQuery,
+			}
+			http.Redirect(w, r, u.String(), http.StatusFound)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
