@@ -38,6 +38,9 @@ export class Division extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
+  getName(): string;
+  setName(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Division.AsObject;
   static toObject(includeInstance: boolean, msg: Division): Division.AsObject;
@@ -49,6 +52,7 @@ export class Division extends jspb.Message {
 export namespace Division {
   export type AsObject = {
     id: string,
+    name: string,
   }
 }
 

@@ -25,7 +25,7 @@ func (d *Divisions) GetDivisions(ctx context.Context, req *guff_proto.GetDivisio
 		return nil, grpc.Errorf(codes.Internal, codes.Internal.String())
 	}
 	for _, d := range divisions {
-		resp.Divisions = append(resp.Divisions, &guff_proto.Division{Id: d.ID})
+		resp.Divisions = append(resp.Divisions, d.ToProto())
 	}
 	return resp, nil
 }

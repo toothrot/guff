@@ -16,15 +16,17 @@ import (
 	"github.com/toothrot/guff/backend/models"
 )
 
-const programsList = `
-sonnets
-leagues/1039207/schedule
-leagues/1039210/schedule
-html
-leagues/1039208/bar/schedule/
-prose
-leagues/1039209/standings/
-`
+type fakeParser struct {
+	wantArgs  []byte
+	divisions []models.Division
+}
+
+func (f *fakeParser) parse(b []byte) []models.Division {
+	if string(b) != string(f.wantArgs) {
+		return []models.Division{}
+	}
+	return f.divisions
+}
 
 func TestAdmin_Scrape(t *testing.T) {
 	u := models.User{Email: "testuser@example.com", IsAdmin: true}
@@ -32,17 +34,21 @@ func TestAdmin_Scrape(t *testing.T) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	defer models.DefaultMemoryPersist.TruncateDivisions(ctx)
-	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := w.Write([]byte(programsList)); err != nil {
-			t.Fatalf("w.Write() = %q, wanted no error", err)
-		}
-	}))
 	if err := models.DefaultMemoryPersist.TruncateDivisions(ctx); err != nil {
 		t.Fatalf("a.Persist.TruncateDivisions(%v) = %v, wanted no error", ctx, err)
 	}
+
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, err := w.Write([]byte("some divisions")); err != nil {
+			t.Fatalf("w.Write() = %q, wanted no error", err)
+		}
+	}))
+	want := []models.Division{{ID: "1039207"}, {ID: "1039210"}}
+	f := fakeParser{divisions: want, wantArgs: []byte("some divisions")}
 	a := &Admin{
-		Config:  &core.Config{ProgramsURL: s.URL},
-		Persist: models.DefaultMemoryPersist,
+		Config:         &core.Config{ProgramsURL: s.URL},
+		Persist:        models.DefaultMemoryPersist,
+		DivisionParser: f.parse,
 	}
 
 	req := &guff_proto.ScrapeRequest{}
@@ -50,7 +56,6 @@ func TestAdmin_Scrape(t *testing.T) {
 		t.Fatalf("a.Scrape(%v, %v) = _, %q", context.Background(), req, err)
 	}
 
-	want := []models.Division{{ID: "1039207"}, {ID: "1039210"}}
 	got, err := models.DefaultMemoryPersist.GetDivisions(ctx)
 	if err != nil {
 		t.Fatalf("models.DefaultMemoryPersist.GetDivisions(%v) = _, %v, wanted no error", ctx, err)

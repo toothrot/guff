@@ -15,9 +15,12 @@ import (
 	"github.com/toothrot/guff/backend/models"
 )
 
+type DivisionParserFunc func(b []byte) []models.Division
+
 type Admin struct {
-	Config  *core.Config
-	Persist models.Persist
+	Config         *core.Config
+	Persist        models.Persist
+	DivisionParser DivisionParserFunc
 
 	guff_proto.UnimplementedAdminServiceServer
 }
@@ -35,7 +38,7 @@ func (a *Admin) Scrape(ctx context.Context, req *guff_proto.ScrapeRequest) (*guf
 	if err != nil {
 		return nil, err
 	}
-	ds := models.ParseDivisions(b)
+	ds := a.DivisionParser(b)
 	if err := a.Persist.UpsertDivisions(ctx, ds); err != nil {
 		glog.Errorf("a.Persist.UpsertDivisions(%v, %v) = %q", ctx, ds, err)
 		return nil, grpc.Errorf(codes.Internal, codes.Internal.String())

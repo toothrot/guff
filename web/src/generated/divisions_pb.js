@@ -345,7 +345,8 @@ proto.guff.proto.Division.prototype.toObject = function(opt_includeInstance) {
  */
 proto.guff.proto.Division.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -386,6 +387,10 @@ proto.guff.proto.Division.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -422,6 +427,13 @@ proto.guff.proto.Division.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getName();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -437,6 +449,21 @@ proto.guff.proto.Division.prototype.getId = function() {
 /** @param {string} value */
 proto.guff.proto.Division.prototype.setId = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string name = 2;
+ * @return {string}
+ */
+proto.guff.proto.Division.prototype.getName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.guff.proto.Division.prototype.setName = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
