@@ -53,7 +53,7 @@ func main() {
 
 	kc, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
-		glog.Fatalf("kms.NewKeyManagementClient() = %v", err)
+		glog.Errorf("kms.NewKeyManagementClient() = %v", err)
 	}
 	store := sessions.NewCookieStore(sessionKey(ctx, kc))
 
@@ -104,6 +104,10 @@ func oauthConfig(ctx context.Context, kc *kms.KeyManagementClient) []byte {
 }
 
 func getKMSSecret(ctx context.Context, kc *kms.KeyManagementClient, cipherText string) []byte {
+	if kmsKey == ""{
+		glog.Infof("GUFF_KMS_KEY not set, skipping")
+		return []byte{}
+	}
 	b, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
 		glog.Errorf("error decoding secret: %v", err)
