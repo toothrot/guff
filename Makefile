@@ -45,16 +45,24 @@ proto: $(ALL_PROTO_FILES)
 #
 # TEST
 #
-.phony: test
-test: proto go-test
+.PHONY: test
+test: proto go-test web-test
 
-.phony: go-test
+.PHONY: go-test
 go-test:
 	cd backend; go test ./...
 
-.phony: watch-go-test
+.PHONY: watch-go-test
 watch-go-test:
 	git ls-files | entr bash -c "time $(MAKE) go-test"
+
+.PHONY: web-test
+web-test:
+	cd web; npm run -- ng test --watch=false --browsers=ChromeHeadless
+
+.PHONY: watch-web-test
+watch-web-test:
+	cd web; npm run -- ng test
 
 #
 # BUILD
@@ -106,6 +114,7 @@ docker-push: docker
 .PHONY: docker-test
 docker-test:
 	docker-compose run --rm backend-test
+	docker-compose run --rm web-test
 
 .PHONY: docker-dev
 docker-dev: proto secrets
@@ -131,3 +140,7 @@ docker-dev-clean:
 .PHONY: watch-docker-dev
 watch-docker-dev:
 	while true; do git ls-files | entr bash -c "time $(MAKE) docker-dev-run"; done
+
+.PHONY: watch-docker-test
+watch-docker-test:
+	while true; do git ls-files | entr bash -c "time $(MAKE) docker-test"; done

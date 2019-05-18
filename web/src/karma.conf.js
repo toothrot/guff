@@ -28,5 +28,17 @@ module.exports = function (config) {
     reporters: ['progress', 'kjhtml'],
     restartOnFileChange: true,
     singleRun: false,
+    browsers: ['ChromeHeadless', 'Chrome'],
+    customLaunchers: {
+      ChromeHeadless: {
+        base: 'Chrome',
+        flags: [
+          '--headless',
+          '--disable-gpu',
+          '--no-sandbox',
+          '--remote-debugging-port=9222',
+        ],
+      },
+    },
   })
 }
