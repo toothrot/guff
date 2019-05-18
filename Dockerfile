@@ -1,20 +1,34 @@
 # Web deps
-FROM node:10.15-alpine as web-deps
+FROM node:10.15 as web-deps
 
 WORKDIR /app
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list
+RUN apt-get update && apt-get install -y google-chrome-stable xvfb procps
 
 COPY ./web/package*.json /app/
 RUN npm install
 
-# Web build
-FROM web-deps as web
+# Web src
+FROM web-deps as web-src
 
 WORKDIR /app
 
 COPY ./web /app/
 
+# Web build
+FROM web-src as web
+
 ARG configuration=production
 RUN npm run build -- --output-path=./dist/out --configuration $configuration
+
+# Web test
+FROM web-src as web-test
+
+WORKDIR /app
+
+CMD npm run -- ng test --watch=false --browsers=ChromeHeadless
 
 # Backend deps
 FROM golang:1.12-alpine as backend-deps

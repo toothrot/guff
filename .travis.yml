@@ -18,3 +18,4 @@ services:
 
 script:
   - docker-compose run backend-test
+  - docker-compose run web-test

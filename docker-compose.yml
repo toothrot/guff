@@ -12,6 +12,9 @@ services:
       - db
     depends_on:
       - db
+    deploy:
+      restart_policy:
+        condition: on-failure
     secrets:
       - source: oauth
         target: oauth.json
@@ -39,6 +42,12 @@ services:
       PGPORT: 5432
       PGUSER: postgres
       PGSSLMODE: disable
+  web-test:
+    build:
+      context: ./
+      target: web-test
+      args:
+        configuration: ""
   db-test:
     image: postgres:11
     restart: always
