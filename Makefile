@@ -103,6 +103,10 @@ docker-push: docker
 	docker tag guff:1 gcr.io/shuffleboardclub/guff:1
 	docker push gcr.io/shuffleboardclub/guff:1
 
+.PHONY: docker-test
+docker-test:
+	docker-compose run --rm backend-test
+
 .PHONY: docker-dev
 docker-dev: proto secrets
 	docker-compose build

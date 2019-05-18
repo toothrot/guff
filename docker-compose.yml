@@ -24,6 +24,28 @@ services:
       PGPORT: 5432
       PGUSER: guff
       PGSSLMODE: disable
+  backend-test:
+    build:
+      context: ./
+      target: backend-test
+      args:
+        configuration: ""
+    links:
+      - db-test
+    depends_on:
+      - db-test
+    environment:
+      PGHOST: db-test
+      PGPORT: 5432
+      PGUSER: postgres
+      PGSSLMODE: disable
+  db-test:
+    image: postgres:11
+    restart: always
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: guff_test
   db:
     image: postgres:11
     restart: always
