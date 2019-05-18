@@ -12,9 +12,6 @@ services:
       - db
     depends_on:
       - db
-    deploy:
-      restart_policy:
-        condition: on-failure
     secrets:
       - source: oauth
         target: oauth.json

@@ -103,7 +103,7 @@ secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/pos
 # DOCKER
 #
 .PHONY: docker
-docker:
+docker: proto
 	docker build --build-arg configuration=production -t guff:1 .
 
 .PHONY: docker-push
@@ -112,7 +112,8 @@ docker-push: docker
 	docker push gcr.io/shuffleboardclub/guff:1
 
 .PHONY: docker-test
-docker-test:
+docker-test: docker
+	docker-compose build
 	docker-compose run --rm backend-test
 	docker-compose run --rm web-test
 
