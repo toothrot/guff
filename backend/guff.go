@@ -11,7 +11,6 @@ import (
 
 	"cloud.google.com/go/kms/apiv1"
 	"github.com/golang/glog"
-	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2/google"
 	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
 
@@ -25,14 +24,12 @@ var (
 	dbname       = flag.String("dbname", "guff_dev", "Postgres database name")
 
 	// Secrets
-	sessionKeyPath  = flag.String("session_key", "/run/secrets/session-key", "Session key secret file path")
 	oauthConfigPath = flag.String("oauth_config", "/run/secrets/oauth.json", "OAuth config JSON file path (see http://golang.org/x/oauth2/google#ConfigFromJSON)")
 	dbPassPath      = flag.String("db_pass_path", "/run/secrets/postgres-guff-password", "Database password secret file path")
 
 	// ENV Secrets
 	// example keyName: "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
 	kmsKey         = os.Getenv("GUFF_KMS_KEY")
-	sessionKeyEnc  = os.Getenv("GUFF_SESSION_KEY_ENC")
 	oauthConfigEnc = os.Getenv("GUFF_OAUTH_CONFIG_ENC")
 	dbURLEnc       = os.Getenv("GUFF_DB_URL_ENC")
 
@@ -57,7 +54,6 @@ func main() {
 	if err != nil {
 		glog.Errorf("kms.NewKeyManagementClient() = %v", err)
 	}
-	store := sessions.NewCookieStore(sessionKey(ctx, kc))
 
 	oc, err := google.ConfigFromJSON(oauthConfig(ctx, kc))
 	if err != nil {
@@ -72,7 +68,6 @@ func main() {
 	oc.Scopes = []string{"email", "profile"}
 	conf := &core.Config{
 		OAuthConfig:  oc,
-		CookieStore:  store,
 		ProgramsURL:  *divisionsURL,
 		DBName:       *dbname,
 		DBPassword:   string(dbpass),
@@ -82,17 +77,6 @@ func main() {
 	g := newGuffApp(ctx, conf)
 
 	g.Serve(ctx)
-}
-
-func sessionKey(ctx context.Context, kc *kms.KeyManagementClient) []byte {
-	if sessionKeyEnc != "" {
-		return getKMSSecret(ctx, kc, sessionKeyEnc)
-	}
-	b, err := getSecret(*sessionKeyPath)
-	if err != nil {
-		glog.Fatalf("error getting secret %q: %q", *sessionKeyPath, err)
-	}
-	return b
 }
 
 func oauthConfig(ctx context.Context, kc *kms.KeyManagementClient) []byte {
