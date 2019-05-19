@@ -26,4 +26,10 @@
 
 divisions: {{ divisions | async }}
 
+<ng-container *ngIf="(teams | async) as ts">
+  <div *ngFor="let team of ts.getTeamsList()">
+    {{team.getName()}}
+  </div>
+</ng-container>
+
 <router-outlet></router-outlet>

@@ -13,4 +13,14 @@ type Config struct {
 	DBPassword   string
 	DBURL        string
 	RequireHTTPS string
+	ScheduleURL  string
+}
+
+const scheduleURL = "https://royalpalmsshuffle.leagueapps.com/ajax/loadSchedule"
+
+func (c *Config) GetScheduleURL() string {
+	if c.ScheduleURL == "" {
+		return scheduleURL
+	}
+	return c.ScheduleURL
 }

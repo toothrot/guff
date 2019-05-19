@@ -2,12 +2,13 @@ import {Injectable} from '@angular/core';
 import {GetCurrentUserRequest, GetCurrentUserResponse} from '../generated/users_pb';
 import {bindNodeCallback, Observable} from 'rxjs';
 import {UsersServiceClient} from '../generated/UsersServiceClientPb';
-import {HttpClient} from '@angular/common/http';
 import {map, shareReplay, take} from 'rxjs/operators';
 import {GetDivisionsRequest, GetDivisionsResponse} from '../generated/divisions_pb';
 import {DivisionsServiceClient} from '../generated/DivisionsServiceClientPb';
 import {ScrapeRequest, ScrapeResponse} from '../generated/admin_pb';
 import {AdminServiceClient} from '../generated/AdminServiceClientPb';
+import {GetTeamsRequest, GetTeamsResponse} from '../generated/teams_pb';
+import {TeamsServiceClient} from '../generated/TeamsServiceClientPb';
 
 @Injectable({
   providedIn: 'root',
@@ -16,11 +17,13 @@ export class AppService {
   client: UsersServiceClient;
   divisionsClient: DivisionsServiceClient;
   adminClient: AdminServiceClient;
+  teamsClient: TeamsServiceClient;
 
-  constructor(private httpClient: HttpClient) {
+  constructor() {
     this.client = new UsersServiceClient('', {}, {});
     this.divisionsClient = new DivisionsServiceClient('', {}, {});
     this.adminClient = new AdminServiceClient('', {}, {});
+    this.teamsClient = new TeamsServiceClient('', {}, {});
   }
 
   private static authHeader() {
@@ -38,6 +41,14 @@ export class AppService {
     const request = new GetDivisionsRequest();
     return bindNodeCallback<GetDivisionsResponse>(
       this.divisionsClient.getDivisions.bind(this.divisionsClient, request, {}),
+    )();
+  }
+
+  getTeams(divisionID = ''): Observable<GetTeamsResponse> {
+    const request = new GetTeamsRequest();
+    request.setDivisionId(divisionID);
+    return bindNodeCallback<GetTeamsResponse>(
+      this.teamsClient.getTeams.bind(this.teamsClient, request, {}),
     )();
   }
 

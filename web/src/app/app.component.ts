@@ -7,6 +7,7 @@ import {concatMap, map, mergeMap, shareReplay, tap} from 'rxjs/operators';
 import {OAuthService} from './oauth/oauth.service';
 import {filter} from 'rxjs/internal/operators/filter';
 import {GetDivisionsResponse} from '../generated/divisions_pb';
+import {GetTeamsResponse} from '../generated/teams_pb';
 
 @Component({
   selector: 'app-root',
@@ -17,11 +18,13 @@ export class AppComponent implements OnInit {
   title = 'web';
   currentUser: Observable<GetCurrentUserResponse>;
   divisions: Observable<GetDivisionsResponse>;
+  teams: Observable<GetTeamsResponse>;
   loginURL: Observable<string>;
 
   constructor(private appService: AppService, private route: ActivatedRoute, private oauthService: OAuthService, private router: Router) {
     this.loginURL = this.appService.oAuthURL().pipe(shareReplay(1));
     this.divisions = this.appService.getDivisions().pipe(shareReplay(1));
+    this.teams = this.appService.getTeams().pipe(shareReplay(1));
   }
 
   ngOnInit() {
@@ -42,9 +45,15 @@ export class AppComponent implements OnInit {
   }
 
   scrape() {
-    this.divisions = this.appService.scrapeDivisions().pipe(
+    const scraped = this.appService.scrapeDivisions().pipe(shareReplay(1));
+    this.divisions = scraped.pipe(
       concatMap(() => {
         return this.appService.getDivisions().pipe(shareReplay(1));
+      })
+    );
+    this.teams = scraped.pipe(
+      concatMap(() => {
+        return this.appService.getTeams().pipe(shareReplay(1));
       })
     );
   }

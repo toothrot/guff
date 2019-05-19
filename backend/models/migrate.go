@@ -24,6 +24,13 @@ var migrations = mapfs.New(map[string]string{
     	is_admin BOOLEAN
 	);`,
 	"2_users.down.sql": `DROP TABLE users;`,
+	"3_teams.up.sql": `CREATE TABLE teams (
+		id SERIAL,
+        name TEXT,
+		extid TEXT UNIQUE,
+        division_extid TEXT
+	);`,
+	"3_teams.down.sql": `DROP TABLE teams;`,
 })
 
 func Migrate(db *sql.DB) error {

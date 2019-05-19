@@ -6,6 +6,7 @@ import {OAuthService} from './oauth/oauth.service';
 import {Observable, of} from 'rxjs';
 import {GetDivisionsResponse} from '../generated/divisions_pb';
 import {GetCurrentUserResponse} from '../generated/users_pb';
+import {GetTeamsResponse} from '../generated/teams_pb';
 
 describe('AppComponent', () => {
   let appServiceStub: Partial<AppService>;
@@ -22,6 +23,9 @@ describe('AppComponent', () => {
       getCurrentUser(): Observable<GetCurrentUserResponse> {
         return of(new GetCurrentUserResponse());
       },
+      getTeams(): Observable<GetTeamsResponse> {
+        return of(new GetTeamsResponse());
+      }
     };
     oauthServiceStub = {};
 
