@@ -19,6 +19,7 @@ import (
 type fakeParser struct {
 	wantArgs  []byte
 	divisions []models.Division
+	teams     map[string][]models.Team
 }
 
 func (f *fakeParser) parse(b []byte) []models.Division {
@@ -26,6 +27,14 @@ func (f *fakeParser) parse(b []byte) []models.Division {
 		return []models.Division{}
 	}
 	return f.divisions
+}
+
+func (f *fakeParser) parseTeams(b []byte) []models.Team {
+	ts, ok := f.teams[string(b)]
+	if !ok {
+		return []models.Team{}
+	}
+	return ts
 }
 
 func TestAdmin_Scrape(t *testing.T) {
@@ -39,16 +48,26 @@ func TestAdmin_Scrape(t *testing.T) {
 	}
 
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := w.Write([]byte("some divisions")); err != nil {
+		resp := "some divisions"
+		if pid := r.URL.Query().Get("programId"); pid != "" {
+			resp = pid
+		}
+		if _, err := w.Write([]byte(resp)); err != nil {
 			t.Fatalf("w.Write() = %q, wanted no error", err)
 		}
 	}))
 	want := []models.Division{{ID: "1039207"}, {ID: "1039210"}}
-	f := fakeParser{divisions: want, wantArgs: []byte("some divisions")}
+	wantTeams := []models.Team{{ID: "123"}}
+	f := fakeParser{
+		divisions: want,
+		teams: map[string][]models.Team{"1039207": wantTeams},
+		wantArgs: []byte("some divisions"),
+	}
 	a := &Admin{
-		Config:         &core.Config{ProgramsURL: s.URL},
+		Config:         &core.Config{ProgramsURL: s.URL, ScheduleURL: s.URL},
 		Persist:        models.DefaultMemoryPersist,
 		DivisionParser: f.parse,
+		TeamParser:     f.parseTeams,
 	}
 
 	req := &guff_proto.ScrapeRequest{}
@@ -61,6 +80,14 @@ func TestAdmin_Scrape(t *testing.T) {
 		t.Fatalf("models.DefaultMemoryPersist.GetDivisions(%v) = _, %v, wanted no error", ctx, err)
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("a.Scrape(%v, %v) mismatch (-want +got):\n%s", ctx, req, diff)
+	}
+
+	teams, err := models.DefaultMemoryPersist.GetTeams(ctx, "")
+	if err != nil {
+		t.Fatalf("models.DefaultMemoryPersist.GetTeams(%v) = _, %v, wanted no error", ctx, err)
+	}
+	if diff := cmp.Diff(wantTeams, teams); diff != "" {
 		t.Errorf("a.Scrape(%v, %v) mismatch (-want +got):\n%s", ctx, req, diff)
 	}
 }

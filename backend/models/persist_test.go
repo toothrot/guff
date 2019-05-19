@@ -18,7 +18,7 @@ func truncateTables(ctx context.Context, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if _, err := tx.ExecContext(ctx, "TRUNCATE TABLE divisions; TRUNCATE TABLE users;"); err != nil {
+	if _, err := tx.ExecContext(ctx, "TRUNCATE TABLE divisions; TRUNCATE TABLE users; TRUNCATE TABLE teams;"); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
@@ -100,11 +100,11 @@ func TestDBPersist_UpsertDivisions(t *testing.T) {
 
 		// preload table with divisions for duplication tests
 		if err := d.UpsertDivisions(ctx, c.current); err != nil {
-			t.Errorf("%q: PersistDivisions(%v) = %v, wanted no error", c.desc, c.current, err)
+			t.Errorf("%q: UpsertDivisions(%v) = %v, wanted no error", c.desc, c.current, err)
 			continue
 		}
 		if err := d.UpsertDivisions(ctx, c.input); err != nil {
-			t.Errorf("%q: PersistDivisions(%v) = %v, wanted no error", c.desc, c.input, err)
+			t.Errorf("%q: UpsertDivisions(%v) = %v, wanted no error", c.desc, c.input, err)
 			continue
 		}
 
@@ -125,7 +125,7 @@ func TestDBPersist_UpsertDivisions(t *testing.T) {
 		}
 
 		if diff := cmp.Diff(c.want, got); diff != "" {
-			t.Errorf("%q: PersistDivisions() mismatch (-want +got):\n%s", c.desc, diff)
+			t.Errorf("%q: UpsertDivisions() mismatch (-want +got):\n%s", c.desc, diff)
 		}
 	}
 }
@@ -203,6 +203,83 @@ func TestDBPersist_FindOrCreateUser(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("FindOrCreateUser(_, %v) mismatch (-want +got):\n%s", tt.email, diff)
+			}
+		})
+	}
+}
+
+func TestDBPersist_UpsertTeams(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	db, cleanup := initTestDb(ctx, t)
+	defer cleanup()
+
+	d := &DBPersist{DB: db}
+
+	cases := []struct {
+		desc    string
+		want    []Team
+		input   []Team
+		current []Team
+	}{
+		{
+			desc:  "inserting into empty table",
+			want:  []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			input: []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+		},
+		{
+			desc:    "inserting all duplicates",
+			want:    []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			current: []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			input:   []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+		},
+		{
+			desc:    "inserting an empty set",
+			want:    []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			current: []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			input:   []Team{},
+		},
+		{
+			desc:    "updating",
+			want:    []Team{{ID: "123", Name: "Tang", DivisionID: "3"}},
+			current: []Team{{ID: "123", Name: "Barf", DivisionID: "2"}},
+			input:   []Team{{ID: "123", Name: "Tang", DivisionID: "3"}},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			if err := truncateTables(ctx, db); err != nil {
+				t.Fatalf("%q: truncateTables(%v, %v) = %v, wanted no error", c.desc, ctx, db, err)
+			}
+
+			// preload table with teams for duplication tests
+			if err := d.UpsertTeams(ctx, c.current); err != nil {
+				t.Fatalf("%q: UpsertTeams(%v) = %v, wanted no error", c.desc, c.current, err)
+			}
+			if err := d.UpsertTeams(ctx, c.input); err != nil {
+				t.Fatalf("%q: UpsertTeams(%v) = %v, wanted no error", c.desc, c.input, err)
+			}
+
+			rows, err := db.QueryContext(ctx, "SELECT extid, name, division_extid FROM teams")
+			if err != nil {
+				t.Fatalf("%q: db.QueryContext(%v, %q) = _, %v, wanted no error", c.desc, ctx, "SELECT exti, name, division_extid FROM teams", err)
+			}
+			defer rows.Close()
+
+			var got []Team
+			for rows.Next() {
+				var i Team
+				if err := rows.Scan(&i.ID, &i.Name, &i.DivisionID); err != nil {
+					t.Fatalf("%q: rows.Scan(%v) = %v, wanted no error", c.desc, d, err)
+				}
+				got = append(got, i)
+			}
+
+			if diff := cmp.Diff(c.want, got); diff != "" {
+				t.Errorf("%q: UpsertTeams() mismatch (-want +got):\n%s", c.desc, diff)
 			}
 		})
 	}

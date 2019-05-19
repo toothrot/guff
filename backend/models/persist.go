@@ -16,10 +16,58 @@ type Persist interface {
 
 	FindOrCreateUser(ctx context.Context, email string) (User, error)
 	TruncateUsers(ctx context.Context) error
+
+	GetTeams(ctx context.Context, divisionID string) ([]Team, error)
+	UpsertTeams(ctx context.Context, ts []Team) error
 }
 
 type DBPersist struct {
 	DB *sql.DB
+}
+
+func (d *DBPersist) GetTeams(ctx context.Context, divisionID string) ([]Team, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	rows, err := d.DB.QueryContext(ctx, "SELECT extid, name, division_extid FROM teams;")
+	if err != nil {
+		return nil, err
+	}
+	var ts []Team
+	for rows.Next() {
+		var t Team
+		if err := rows.Scan(&t.ID, &t.Name, &t.DivisionID); err != nil {
+			return ts, err
+		}
+		ts = append(ts, t)
+	}
+	return ts, nil
+}
+
+func (d *DBPersist) UpsertTeams(ctx context.Context, ts []Team) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	if len(ts) == 0 {
+		return nil
+	}
+
+	tx, err := d.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	s, err := tx.PrepareContext(ctx, "INSERT INTO teams(extid, name, division_extid) VALUES ($1, $2, $3) ON CONFLICT(extid) DO UPDATE SET name = $2, division_extid = $3")
+	if err != nil {
+		return err
+	}
+	for _, i := range ts {
+		if _, err := s.ExecContext(ctx, i.ID, i.Name, i.DivisionID); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *DBPersist) TruncateUsers(ctx context.Context) error {
@@ -131,14 +179,29 @@ func (d *DBPersist) UpsertDivisions(ctx context.Context, ds []Division) error {
 
 var DefaultMemoryPersist = &MemoryPersist{
 	divisions: []Division{},
-	mx:        &sync.Mutex{},
+	teams:     []Team{},
 	users:     map[string]User{},
+	mx:        &sync.Mutex{},
 }
 
 type MemoryPersist struct {
 	divisions []Division
+	teams     []Team
 	users     map[string]User
 	mx        *sync.Mutex
+}
+
+func (m *MemoryPersist) GetTeams(ctx context.Context, divisionID string) ([]Team, error) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+	return m.teams, nil
+}
+
+func (m *MemoryPersist) UpsertTeams(ctx context.Context, ts []Team) error {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+	m.teams = append(m.teams, ts...)
+	return nil
 }
 
 func (m *MemoryPersist) TruncateUsers(ctx context.Context) error {
@@ -181,4 +244,10 @@ func (m *MemoryPersist) UpsertDivisions(ctx context.Context, ds []Division) erro
 	defer m.mx.Unlock()
 	m.divisions = ds
 	return nil
+}
+
+func (m *MemoryPersist) TruncateTeams() {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+	m.teams = []Team{}
 }

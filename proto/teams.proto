@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package guff.proto;
+
+service TeamsService {
+  rpc GetTeams(GetTeamsRequest) returns (GetTeamsResponse) {}
+}
+
+message GetTeamsRequest {
+  string division_id = 1;
+}
+
+message GetTeamsResponse {
+  repeated Team teams = 1;
+}
+
+message Team {
+  string id = 1;
+  string name = 2;
+  string division_id = 3;
+}
