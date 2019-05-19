@@ -85,10 +85,7 @@ dist/guff: dist
 # DEV
 #
 .PHONY: secrets
-secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/postgres-guff-password .secrets/session-key-secret-dev
-
-.secrets/session-key-secret-dev:
-	openssl rand -base64 -out .secrets/session-key-secret-dev 64
+secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/postgres-guff-password
 
 .secrets/oauth2-secret-dev.json:
 	cat ./doc/oauth_dev_credentials.md
