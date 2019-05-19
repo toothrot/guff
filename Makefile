@@ -112,14 +112,14 @@ docker-push: docker
 	docker push gcr.io/shuffleboardclub/guff:1
 
 .PHONY: docker-test
-docker-test: docker
-	docker-compose build
+docker-test: proto
+	docker-compose build --parallel backend-test web-test
 	docker-compose run --rm backend-test
 	docker-compose run --rm web-test
 
 .PHONY: docker-dev
 docker-dev: proto secrets
-	docker-compose build
+	docker-compose build web
 
 .PHONY: docker-dev-run
 docker-dev-run: docker-dev
