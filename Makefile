@@ -97,6 +97,14 @@ secrets: .secrets/postgres-password .secrets/oauth2-secret-dev.json .secrets/pos
 	openssl rand -hex -out .secrets/postgres-guff-password 32
 
 #
+# DEPLOY
+#
+
+.PHONY: deploy
+deploy: docker-push
+	gcloud beta run deploy guff --image gcr.io/shuffleboardclub/guff:1  --project=shuffleboardclub
+
+#
 # DOCKER
 #
 .PHONY: docker
