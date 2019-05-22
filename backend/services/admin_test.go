@@ -60,8 +60,8 @@ func TestAdmin_Scrape(t *testing.T) {
 	wantTeams := []models.Team{{ID: "123"}}
 	f := fakeParser{
 		divisions: want,
-		teams: map[string][]models.Team{"1039207": wantTeams},
-		wantArgs: []byte("some divisions"),
+		teams:     map[string][]models.Team{"1039207": wantTeams},
+		wantArgs:  []byte("some divisions"),
 	}
 	a := &Admin{
 		Config:         &core.Config{ProgramsURL: s.URL, ScheduleURL: s.URL},

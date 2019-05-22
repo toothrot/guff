@@ -19,8 +19,8 @@ type Team struct {
 
 func (t *Team) ToProto() *guff_proto.Team {
 	return &guff_proto.Team{
-		Id: t.ID,
-		Name: t.Name,
+		Id:         t.ID,
+		Name:       t.Name,
 		DivisionId: t.DivisionID,
 	}
 }
@@ -47,8 +47,8 @@ func ParseTeams(b []byte) []Team {
 		}
 		idTeams[matches[2]] = Team{
 			DivisionID: matches[1],
-			ID: matches[2],
-			Name: link.Text(),
+			ID:         matches[2],
+			Name:       link.Text(),
 		}
 	})
 	for _, team := range idTeams {

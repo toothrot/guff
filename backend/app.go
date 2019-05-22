@@ -60,7 +60,7 @@ func setupDB(config *core.Config) *sql.DB {
 		glog.Fatalf("sql.Open(%q, %q) = _, %v, wanted no error", "postgres", fmt.Sprintf("dbname=%q", config.DBName), err)
 	}
 	if err := models.Migrate(db); err != nil {
-		glog.Fatalf("Migrate(%v) = %v, wanted no error", db, err)
+		glog.Fatalf("Migrate(_) = %v, wanted no error", err)
 	}
 	return db
 }
@@ -105,20 +105,16 @@ type fileServer struct {
 }
 
 func (f *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	glog.Infof("h: %#v", r.Header)
 	abs, err := filepath.Abs(f.webRoot)
 	if err != nil {
 		log.Fatalf("Error parsing absolute path from %q", *webRoot)
 	}
-	glog.Infof("Serving from root %q", abs)
 	if _, err := os.Stat(path.Join(abs, r.URL.Path)); os.IsNotExist(err) {
 		// Fall-back to angular's router.
-		glog.Infof("welp %q %q %q", r.URL.Path, err, path.Join(abs, "/index.html"))
 		http.ServeFile(w, r, path.Join(abs, "/index.html"))
 		return
 	}
-
-	glog.Infof("%q: %q", r.Method, r.URL.Path)
+	glog.V(2).Infof("%q: %q, %q", r.Method, abs, r.URL.Path)
 	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
 	w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
 
