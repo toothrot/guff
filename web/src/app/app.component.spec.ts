@@ -2,7 +2,7 @@ import {async, TestBed} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {AppComponent} from './app.component';
 import {AppService} from './app.service';
-import {OAuthService} from './oauth/oauth.service';
+import {OAuthService} from './users/oauth.service';
 import {Observable, of} from 'rxjs';
 import {GetDivisionsResponse} from '../generated/divisions_pb';
 import {GetCurrentUserResponse} from '../generated/users_pb';
